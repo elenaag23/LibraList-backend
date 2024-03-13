@@ -25,7 +25,7 @@ Route::middleware('auth:sanctum')->group(function (){
  Route::get('/getUsers', [UserController::class, 'getUsers']);
 Route::post('/login', [RegisterController::class, 'login']);
 Route::post('/register', [RegisterController::class, 'register']);
-    Route::get('/insertBook', [InsertController::class, 'insertBook']);
+Route::post('/insertBook', [InsertController::class, 'insertBook']);
 
 
 
