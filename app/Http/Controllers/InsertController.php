@@ -44,7 +44,8 @@ class InsertController extends Controller
                 'bookIdentifier' => $book['identifier'],
                 'bookUrl' => $book['url'],
                 'bookCover' => $book['jpg']
-                ]); return response()->json(['message' => 'Book inserted successfully'], 201);
+                ]); 
+                return response()->json(['message' => 'Book inserted successfully'], 201);
         } catch (\Exception $e) {
             Log::error("Error inserting book: " . $e->getMessage());
 
