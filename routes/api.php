@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\InsertController;
+use App\Http\Controllers\BookController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,11 +23,14 @@ Route::middleware('auth:sanctum')->group(function (){
 
 });
 
- Route::get('/getUsers', [UserController::class, 'getUsers']);
+Route::get('/getUsers', [UserController::class, 'getUsers']);
 Route::post('/login', [RegisterController::class, 'login']);
 Route::post('/register', [RegisterController::class, 'register']);
 Route::post('/insertBook', [InsertController::class, 'insertBook']);
 Route::post('/addToLibrary', [InsertController::class, 'addToLibrary']);
+Route::get('/userBook', [BookController::class, 'userBook']);
+
+
 
 
 
