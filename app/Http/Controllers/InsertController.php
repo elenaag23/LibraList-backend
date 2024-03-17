@@ -57,8 +57,10 @@ class InsertController extends Controller
     public function addToLibrary(Request $request)
     {
         log::info("parameters to add to library: " . print_r($request->all(), true));
-        $userId = $request->user;
+        $userMail = $request->user;
         $bookIdentifier = $request->book;
+
+        $userId = self::getUser($userMail);
         $bookId = self::getBookId($bookIdentifier);
 
         $bookInDB = DB::table('userBooks')->where('userId', $userId)->where('bookId', $bookId)->get()->first();
@@ -94,5 +96,12 @@ class InsertController extends Controller
 
         return $bookId->bookId;
 
+    }
+
+    public function getUser($userMail)
+    {
+        $user = DB::table('users')->where('email', $userMail)->first();
+
+        return $user->id;
     }
 }
