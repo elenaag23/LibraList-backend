@@ -30,6 +30,7 @@ Route::post('/insertBook', [InsertController::class, 'insertBook']);
 Route::post('/addToLibrary', [InsertController::class, 'addToLibrary']);
 Route::get('/userBook', [BookController::class, 'userBook']);
 Route::get('/bookList', [BookController::class, 'getBookList']);
+Route::get('/getpdf', [BookController::class, 'getPdf']);
 
 
 
