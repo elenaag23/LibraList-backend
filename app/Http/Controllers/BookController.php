@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 
 
 
@@ -83,5 +84,16 @@ class BookController extends Controller
         $user = DB::table('users')->where('email', $userMail)->first();
 
         return $user->id;
+    }
+
+    public function getPdf(Request $request)
+    {
+         try {
+            $pdfUrl = $request->input('url');
+            $response = Http::get($pdfUrl);
+            return response($response->body())->header('Content-Type', 'application/pdf');
+        } catch (\Exception $e) {
+            return response('Error fetching PDF', 500);
+        }
     }
 }
