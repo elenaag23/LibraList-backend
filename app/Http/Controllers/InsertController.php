@@ -115,24 +115,42 @@ class InsertController extends Controller
         $userId = self::getUser($userMail);
         $bookId = self::getBookId($bookIdentifier);
 
+        $insertHigh = self::insertHighlight($highlight);
+
+        if($insertHigh->getStatusCode() == 201)
+        {
+try {
+            $user_highlight_book = DB::table('user_book_highlight')->insertGetId([
+                'userId' => $userId,
+                'bookId' => $bookId,
+                'highlightId' => $highlight['id'],
+                ]); return response()->json(['message' => 'User added Book highlight successfully'], 201);
+        } catch (\Exception $e) {
+            Log::error("Error inserting highlight book to user: " . $e->getMessage());
+
+            return response()->json(['error' => 'Failed to insert highlight book to user'], 500);
+        }
+        }
     }
 
     public function insertHighlight($highlight)
     {
-        $element = DB::table('highlights')->where('highlightId', $highlight->id)->where('highlightPage', $highlight->page)->where('highlightTop', $highlight->top)->where('highlightLeft', $highlight->left)->where('highlightHeight', $highlight->height)->where('highlightWidth', $highlight->width)->where('highlightClassname', $highlight->classname)->where('highlightText', $highlight->text)->first();
+        log::info("highlight id: " . $highlight['id']);
 
-        if($elem == null)
+        $element = DB::table('highlights')->where('highlightId', $highlight['id'])->where('highlightPage', $highlight['page'])->where('highlightTop', $highlight['top'])->where('highlightLeft', $highlight['left'])->where('highlightHeight', $highlight['height'])->where('highlightWidth', $highlight['width'])->where('highlightClassname', $highlight['classname'])->where('highlightText', $highlight['text'])->first();
+
+        if($element == null)
         {
             try {
             DB::table('highlights')->insert([
-                'highlightId' => $highlight->id,
-                'highlightPage' => $highlight->page,
-                'highlightTop' => $highlight->top,
-                'highlightLeft' => $highlight->left,
-                'highlightHeight' => $highlight->height,
-                'highlightWidth' => $highlight->width,
-                'highlightClassname' => $highlight->classname,
-                'highlightText' => $highlight->text,
+                'highlightId' => $highlight['id'],
+                'highlightPage' => $highlight['page'],
+                'highlightTop' => $highlight['top'],
+                'highlightLeft' => $highlight['left'],
+                'highlightHeight' => $highlight['height'],
+                'highlightWidth' => $highlight['width'],
+                'highlightClassname' => $highlight['classname'],
+                'highlightText' => $highlight['text'],
                 ]); 
         
                 return response()->json(['message' => 'Highlight inserted successfully'], 201);
