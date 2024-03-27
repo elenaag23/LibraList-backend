@@ -104,4 +104,44 @@ class InsertController extends Controller
 
         return $user->id;
     }
+
+    public function addHighlight(Request $request)
+    {
+        log::info("parameters to add to highlights: " . print_r($request->all(), true));
+        $userMail = $request->user;
+        $bookIdentifier = $request->book;
+        $highlight = $request->highlight;
+
+        $userId = self::getUser($userMail);
+        $bookId = self::getBookId($bookIdentifier);
+
+    }
+
+    public function insertHighlight($highlight)
+    {
+        $element = DB::table('highlights')->where('highlightId', $highlight->id)->where('highlightPage', $highlight->page)->where('highlightTop', $highlight->top)->where('highlightLeft', $highlight->left)->where('highlightHeight', $highlight->height)->where('highlightWidth', $highlight->width)->where('highlightClassname', $highlight->classname)->where('highlightText', $highlight->text)->first();
+
+        if($elem == null)
+        {
+            try {
+            DB::table('highlights')->insert([
+                'highlightId' => $highlight->id,
+                'highlightPage' => $highlight->page,
+                'highlightTop' => $highlight->top,
+                'highlightLeft' => $highlight->left,
+                'highlightHeight' => $highlight->height,
+                'highlightWidth' => $highlight->width,
+                'highlightClassname' => $highlight->classname,
+                'highlightText' => $highlight->text,
+                ]); 
+        
+                return response()->json(['message' => 'Highlight inserted successfully'], 201);
+        } catch (\Exception $e) {
+            Log::error("Error inserting highlight: " . $e->getMessage());
+
+            return response()->json(['error' => 'Failed to insert highlight'], 500);
+        }
+        }
+    }
+
 }

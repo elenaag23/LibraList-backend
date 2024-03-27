@@ -91,8 +91,11 @@ class BookController extends Controller
          try {
             $pdfUrl = $request->input('url');
             $response = Http::get($pdfUrl);
+
+            log::info("responseeee: " . print_r($response, true));
             return response($response->body())->header('Content-Type', 'application/pdf');
         } catch (\Exception $e) {
+            log::info("exception: " . print_r($e, true));
             return response('Error fetching PDF', 500);
         }
     }
