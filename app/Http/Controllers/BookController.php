@@ -36,7 +36,7 @@ class BookController extends Controller
         else return response()->json(['message' => 'User has book in library', 'has'=>true], 200); 
     }
 
-        public function getBookList(Request $request)
+    public function getBookList(Request $request)
     {
         $userMail = $request->userMail;
 
@@ -79,7 +79,25 @@ class BookController extends Controller
         return response()->json($foundBook);
     }
 
-        public function getUser($userMail)
+    public function getHighlight($highlightId)
+    {
+        $highlight = DB::table('highlights')->where('highlightId', $highlightId)->first();
+
+        $found = [
+            'id' => $highlight->highlightId,
+            'page' => $highlight->highlightPage,
+            'top' => $highlight->highlightTop,
+            'left' => $highlight->highlightLeft,
+            'height' => $highlight->highlightHeight,
+            'width' => $highlight->highlightWidth,
+            'classname' => $highlight->highlightClassname,
+            'text' => $highlight->highlightText,
+        ];
+
+        return response()->json($found);
+    }
+
+    public function getUser($userMail)
     {
         $user = DB::table('users')->where('email', $userMail)->first();
 
@@ -99,4 +117,61 @@ class BookController extends Controller
             return response('Error fetching PDF', 500);
         }
     }
+
+    public function getBookByIdentifier($bookIdentifier)
+    {
+        $book = DB::table('books')->where('bookIdentifier', $bookIdentifier)->first();
+
+        return $book->bookId;
+    }
+
+    public function userHighlightsBook(Request $request)
+    {
+        $userMail = $request->userMail;
+        $bookIdentifier = $request->bookIdentifier;
+
+        $userId = self::getUser($userMail);
+        $bookId = self::getBookByIdentifier($bookIdentifier);
+
+        $getUserHighlightBooks = DB::table('user_book_highlight')->where('userId', $userId)->where('bookId', $bookId)->get()->toArray();
+
+        log::info('user has following highlights: ' . print_r($getUserHighlightBooks, true));
+
+        if($getUserHighlightBooks == null)
+        {
+            return response()->json(['message' => 'User does not have highlights in library', 'highlights'=>[]], 200);
+        }
+
+        else{
+            $highlightsArray = [];
+            $colors = [];
+            for($i=0 ; $i<count($getUserHighlightBooks) ; $i++)
+            {
+                $getHighlight = self::getHighlight($getUserHighlightBooks[$i]->highlightId);
+
+                $content = json_decode($getHighlight->getContent());
+
+                if(isset($highlightsArray[(int)$content->page]))
+                {
+                    array_push($highlightsArray[(int)$content->page], $content);
+                }
+                else $highlightsArray[(int)$content->page] = [$content];
+
+                if(isset($colors[$content->classname]))
+                {
+                    array_push($colors[$content->classname], $content);
+                }
+                else $colors[$content->classname] = [$content];
+
+                //array_push($colors, $content->classname);
+            }
+
+            //$colors = collect($colors)->unique();
+
+            log::info("user has following highlights in book: " . print_r($highlightsArray, true));
+
+            return response()->json(['message' => 'User highlights', 'highlights'=>$highlightsArray, 'colors'=>$colors], 200);
+        }
+    }
+
 }
