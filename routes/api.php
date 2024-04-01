@@ -33,6 +33,7 @@ Route::get('/bookList', [BookController::class, 'getBookList']);
 Route::get('/getpdf', [BookController::class, 'getPdf']);
 Route::get('/userHighlightsBook', [BookController::class, 'userHighlightsBook']);
 Route::post('/addHighlight', [InsertController::class, 'addHighlight']);
+Route::post('/displayHighlights', [HighlightsController::class, 'displayHighlights']);
 
 
 

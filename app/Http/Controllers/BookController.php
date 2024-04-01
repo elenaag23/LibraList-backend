@@ -97,7 +97,7 @@ class BookController extends Controller
         return response()->json($found);
     }
 
-        public function getUser($userMail)
+    public function getUser($userMail)
     {
         $user = DB::table('users')->where('email', $userMail)->first();
 
@@ -144,23 +144,33 @@ class BookController extends Controller
 
         else{
             $highlightsArray = [];
+            $colors = [];
             for($i=0 ; $i<count($getUserHighlightBooks) ; $i++)
             {
                 $getHighlight = self::getHighlight($getUserHighlightBooks[$i]->highlightId);
 
                 $content = json_decode($getHighlight->getContent());
 
-                if(isset($highlightsArray[$content->page]))
+                if(isset($highlightsArray[(int)$content->page]))
                 {
-                    array_push($highlightsArray[$content->page], $content);
-
+                    array_push($highlightsArray[(int)$content->page], $content);
                 }
-                else $highlightsArray[$content->page] = [$content];
+                else $highlightsArray[(int)$content->page] = [$content];
+
+                if(isset($colors[$content->classname]))
+                {
+                    array_push($colors[$content->classname], $content);
+                }
+                else $colors[$content->classname] = [$content];
+
+                //array_push($colors, $content->classname);
             }
 
-            log::info("user has following highlits in book: " . print_r($highlightsArray, true));
+            //$colors = collect($colors)->unique();
 
-            return response()->json(['message' => 'User highlights', 'highlights'=>$highlightsArray], 200);
+            log::info("user has following highlights in book: " . print_r($highlightsArray, true));
+
+            return response()->json(['message' => 'User highlights', 'highlights'=>$highlightsArray, 'colors'=>$colors], 200);
         }
     }
 
