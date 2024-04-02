@@ -14,15 +14,27 @@ class RegisterController extends Controller
 {
      public function register(Request $request)
     {
-        //log::info("entered register");
+        log::info("entered register: " . print_r($request->all(), true));
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:6|confirmed',
+            'password' => 'required|string|min:6',
+            'password_confirm' => 'required|string|same:password',
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 422);
+            // Get the first error message
+            $errors = $validator->errors();
+
+            log::info("errors: " . print_r($errors, true));
+            $firstError = $errors->first();
+
+            // Get the errors for each field
+            $nameErrors = $errors->get('name');
+            $emailErrors = $errors->get('email');
+            $passwordErrors = $errors->get('password');
+
+           return response()->json(['message' => $firstError], 422);
         }
 
         $user = User::create([
