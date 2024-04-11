@@ -33,7 +33,7 @@ class BookController extends Controller
             return response()->json(['message' => 'User does not have this book in library', 'has'=>false], 200);
         }
 
-        else return response()->json(['message' => 'User has book in library', 'has'=>true], 200); 
+        else return response()->json(['message' => 'User has book in library', 'has'=>true, 'pageNumber' => $getUserBook->pageNumber], 200); 
     }
 
     public function getBookList(Request $request)
@@ -113,7 +113,7 @@ class BookController extends Controller
             log::info("responseeee: " . print_r($response, true));
             return response($response->body())->header('Content-Type', 'application/pdf');
         } catch (\Exception $e) {
-            log::info("exception: " . print_r($e, true));
+            //log::info("exception: " . print_r($e, true));
             return response('Error fetching PDF', 500);
         }
     }
@@ -173,5 +173,24 @@ class BookController extends Controller
             return response()->json(['message' => 'User highlights', 'highlights'=>$highlightsArray, 'colors'=>$colors], 200);
         }
     }
+
+    public function setPage(Request $request)
+    {
+        $userMail = $request->user;
+        $book = $request->book;
+        $pageNumber = $request->pageNumber;
+
+        $userId = self::getUser($userMail);
+        $bookId = self::getBookByIdentifier($book);
+
+        $getBook = DB::table('userbooks')->where('userId', $userId)->where('bookId', $bookId)->update(['pageNumber' => $pageNumber]);
+
+        if (DB::table('userbooks')->where('userId', $userId)->where('bookId', $bookId)->where('pageNumber', $pageNumber)->exists()) {
+            return response()->json(['message' => 'User book page updated successfully'], 200);
+        } else {
+            return response()->json(['error' => 'User book not found'], 404);
+        }
+    }
+
 
 }
