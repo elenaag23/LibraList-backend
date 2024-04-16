@@ -42,7 +42,7 @@ class BookController extends Controller
 
         $user = self::getUser($userMail);
 
-        $getUserBooks = DB::table('userBooks')->where('userId', $user)->get()->toArray();
+        $getUserBooks = DB::table('userBooks')->where('userId', $user)->orderBy('accessDate', 'desc')->get()->toArray();
 
         log::info('user has following books: ' . print_r($getUserBooks, true));
 
@@ -55,7 +55,7 @@ class BookController extends Controller
             $bookArray = [];
             for($i=0 ; $i<count($getUserBooks) ; $i++)
             {
-                $getBook = self::getBook($getUserBooks[$i]->bookId);
+                $getBook = self::getBook($getUserBooks[$i]->bookId, $getUserBooks[$i]->pageNumber);
                 array_push($bookArray, $getBook->getContent());
             }
 
@@ -65,7 +65,7 @@ class BookController extends Controller
         }
     }
 
-    public function getBook($bookId)
+    public function getBook($bookId, $pageNumber)
     {
         $book = DB::table('books')->where('bookId', $bookId)->first();
 
@@ -74,6 +74,8 @@ class BookController extends Controller
             'identifier' => $book->bookIdentifier,
             'jpg' => $book->bookCover,
             'url' => $book->bookUrl,
+            'pageNumber' => $pageNumber,
+            'totalPages' => $book->bookPages
         ];
 
         return response()->json($foundBook);
@@ -179,13 +181,14 @@ class BookController extends Controller
         $userMail = $request->user;
         $book = $request->book;
         $pageNumber = $request->pageNumber;
+        $accessDate = $request->accessTime;
 
         $userId = self::getUser($userMail);
         $bookId = self::getBookByIdentifier($book);
 
-        $getBook = DB::table('userbooks')->where('userId', $userId)->where('bookId', $bookId)->update(['pageNumber' => $pageNumber]);
+        $getBook = DB::table('userbooks')->where('userId', $userId)->where('bookId', $bookId)->update(['pageNumber' => $pageNumber, 'accessDate' => $accessDate]);
 
-        if (DB::table('userbooks')->where('userId', $userId)->where('bookId', $bookId)->where('pageNumber', $pageNumber)->exists()) {
+        if (DB::table('userbooks')->where('userId', $userId)->where('bookId', $bookId)->where('pageNumber', $pageNumber)->where('accessDate', $accessDate)->exists()) {
             return response()->json(['message' => 'User book page updated successfully'], 200);
         } else {
             return response()->json(['error' => 'User book not found'], 404);
