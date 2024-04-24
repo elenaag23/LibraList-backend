@@ -29,11 +29,14 @@ class InsertController extends Controller
             {
                 $res = self::insertBookFunction($receivedBooks[$i]);
                 log::info("res to insert: " . print_r($res->getStatusCode(), true));
+
+                if($res->getStatusCode() == 500)
+                return response()->json(['message' => 'Error at book insertion'], 500);
+
+                return response()->json(['message' => 'Books added successfully'], 201)->header('Access-Control-Allow-Origin', '*'); 
+
             }
         }
-        return response()->json(['message' => 'Books added successfully'], 201)
-    ->header('Access-Control-Allow-Origin', '*'); 
- 
     }
 
     public function insertBookFunction(Array $book)
@@ -43,8 +46,11 @@ class InsertController extends Controller
                 'bookName' => $book['title'],
                 'bookIdentifier' => $book['identifier'],
                 'bookUrl' => $book['url'],
-                'bookCover' => $book['jpg']
-                ]); 
+                'bookCover' => $book['jpg'],
+                'bookPages' => 1
+                ]);
+
+                //log::info("id of insertion: " . print_r($idNewBook, true));
         
                 return response()->json(['message' => 'Book inserted successfully'], 201);
         } catch (\Exception $e) {
@@ -90,11 +96,12 @@ class InsertController extends Controller
     {
         log::info("reached get book id function: " . gettype($identifier));
 
-        $bookId = DB::table('books')->where('bookIdentifier', $identifier)->first();
+        $book = DB::table('books')->where('bookIdentifier', $identifier)->first();
 
-        log::info("found book id: " . $bookId->bookId);
+        //log::info("found book id: " . $bookId->bookId);
 
-        return $bookId->bookId;
+        if($book) return $book->bookId;
+        else return null;
 
     }
 

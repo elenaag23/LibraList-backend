@@ -23,7 +23,7 @@ class BookController extends Controller
             $bookId = $getBook->bookId;
         }
         else{
-            return response()->json(['message' => 'Book not found'], 404);
+            return response()->json(['message' => 'Book not found', 'has'=>false], 200);
         }
 
         $getUserBook = DB::table('userBooks')->where('userId', $getUser)->where('bookId', $bookId)->first();
@@ -124,7 +124,8 @@ class BookController extends Controller
     {
         $book = DB::table('books')->where('bookIdentifier', $bookIdentifier)->first();
 
-        return $book->bookId;
+        if ($book != null ) return $book->bookId;
+        else return null;
     }
 
     public function userHighlightsBook(Request $request)
@@ -134,6 +135,11 @@ class BookController extends Controller
 
         $userId = self::getUser($userMail);
         $bookId = self::getBookByIdentifier($bookIdentifier);
+
+        if($bookId == null)
+        {
+            return response()->json(['message' => 'User does not have highlights in library', 'highlights'=>[]], 200);
+        }
 
         $getUserHighlightBooks = DB::table('user_book_highlight')->where('userId', $userId)->where('bookId', $bookId)->get()->toArray();
 
@@ -182,9 +188,12 @@ class BookController extends Controller
         $book = $request->book;
         $pageNumber = $request->pageNumber;
         $accessDate = $request->accessTime;
+        $pagesNumber = $request->bookPages;
 
         $userId = self::getUser($userMail);
         $bookId = self::getBookByIdentifier($book);
+
+        $updatePagesNumber = DB::table('books')->where('bookId', $bookId)->update(['bookPages' => $pagesNumber]);
 
         $getBook = DB::table('userbooks')->where('userId', $userId)->where('bookId', $bookId)->update(['pageNumber' => $pageNumber, 'accessDate' => $accessDate]);
 
@@ -195,5 +204,39 @@ class BookController extends Controller
         }
     }
 
+    public function deleteBook(Request $request)
+    {
+        $userMail = $request->user;
+        $bookIdentifier = $request->book;
+        $getUser = self::getUser($userMail);
+        $getBook = DB::table('books')->where('bookIdentifier', $bookIdentifier)->first();
+
+        if(isset($getBook->bookId))
+        {
+            $bookId = $getBook->bookId;
+        }
+        else{
+            return response()->json(['message' => 'Book not found'], 404);
+        }
+        
+        $deleteUserBook = DB::table('userBooks')->where('userId', $getUser)->where('bookId', $bookId)->delete();
+
+        log::info("deleted: " . print_r($deleteUserBook, true));
+
+
+        $getUserHighlightBooks = DB::table('user_book_highlight')->where('userId', $getUser)->where('bookId', $bookId)->pluck('highlightId');
+
+        DB::table('user_book_highlight')->where('userId', $getUser)->where('bookId', $bookId)->delete();
+
+        DB::table('highlights')->whereIn('highlightId', $getUserHighlightBooks)->delete();
+
+        if ($deleteUserBook) {
+            // Deletion successful
+            return response()->json(['message' => 'The user book record has been successfully deleted.']);
+        } else {
+            // Deletion failed
+            return response()->json(['message' => 'Failed to delete the user book record.'], 500);
+        }
+    }
 
 }
