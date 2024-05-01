@@ -6,6 +6,7 @@ use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\InsertController;
 use App\Http\Controllers\BookController;
+use App\Http\Controllers\PlaylistController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,7 +21,7 @@ use App\Http\Controllers\BookController;
 
 Route::middleware('auth:sanctum')->group(function (){
     Route::get('/authUser', [UserController::class, 'getCurrentUser']);
-
+    Route::get('/userPlaylists', [PlaylistController::class, 'getUserPlaylist']);
 });
 
 Route::get('/getUsers', [UserController::class, 'getUsers']);
