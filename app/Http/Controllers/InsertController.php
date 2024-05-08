@@ -17,26 +17,29 @@ class InsertController extends Controller
 
         for($i=0 ; $i<count($receivedBooks); $i++)
         {
-            $identifier = $receivedBooks[$i]['identifier'];
-            log::info("here is the book identifier: " . $identifier);
-
-            $bookInDB = DB::table('books')->where('bookIdentifier', $identifier)->get()->first();
-
-           // log::info("result of db: " . print_r($bookInDB, true));
-            log::info("result of db: " . gettype($bookInDB));
-
-            if($bookInDB == null)
+            if(!isset($receivedBooks[$i]['bookId']))
             {
-                $res = self::insertBookFunction($receivedBooks[$i]);
-                log::info("res to insert: " . print_r($res->getStatusCode(), true));
+                $identifier = $receivedBooks[$i]['identifier'];
+                log::info("here is the book identifier: " . $identifier);
 
-                if($res->getStatusCode() == 500)
-                return response()->json(['message' => 'Error at book insertion'], 500);
+                $bookInDB = DB::table('books')->where('bookIdentifier', $identifier)->get()->first();
 
-                return response()->json(['message' => 'Books added successfully'], 201)->header('Access-Control-Allow-Origin', '*'); 
+                // log::info("result of db: " . print_r($bookInDB, true));
+                    log::info("result of db: " . gettype($bookInDB));
 
+                if($bookInDB == null)
+                {
+                    $res = self::insertBookFunction($receivedBooks[$i]);
+                    log::info("res to insert: " . print_r($res->getStatusCode(), true));
+
+                    if($res->getStatusCode() == 500)
+                    return response()->json(['message' => 'Error at book insertion'], 500);
+
+                    return response()->json(['message' => 'Books added successfully'], 201)->header('Access-Control-Allow-Origin', '*'); 
+                }
             }
         }
+
     }
 
     public function insertBookFunction(Array $book)

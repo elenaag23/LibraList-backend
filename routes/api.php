@@ -38,6 +38,8 @@ Route::post('/displayHighlights', [HighlightsController::class, 'displayHighligh
 Route::patch('/setPage', [BookController::class, 'setPage']);
 Route::delete('/deleteBook', [BookController::class, 'deleteBook']);
 Route::post('/savePlaylist', [InsertController::class, 'savePlaylist']);
+Route::get('/getBookInfo', [BookController::class, 'getBookInfo']);
+Route::get('/getBookData', [BookController::class, 'getBookData']);
 
 
 

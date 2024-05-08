@@ -239,4 +239,74 @@ class BookController extends Controller
         }
     }
 
+    public function getBookInfo(Request $request)
+    {
+        $book = $request->book;
+        $apiKey = 'AIzaSyCujE8VRyac9339XeuTFOyIuIovhTb_E-U';
+
+        $url = 'https://www.googleapis.com/books/v1/volumes';
+        $response = Http::get($url, [
+        'q' => $book,
+        'key' => $apiKey,
+    ]);
+
+    if ($response->successful()) {
+        log::info("get book data response successful: " . print_r($response->json(), true));
+        $data = $response->json();
+        $items = $data["items"];
+
+        log::info("count items: " . count($items));
+
+        for($i = 0; $i<count($items); $i++)
+        {
+            log::info("item data: " . print_r($items[$i]["volumeInfo"], true));
+            if(isset($items[$i]["volumeInfo"]["title"]) && isset($items[$i]["volumeInfo"]["authors"]) && isset($items[$i]["volumeInfo"]["description"]) && isset($items[$i]["volumeInfo"]["categories"]) && isset($items[$i]["volumeInfo"]["language"]) && $items[$i]["volumeInfo"]["language"] == "en")
+            {
+                return response()->json(['message' => 'Get book info successfully.', 'bookInfo'=>$items[$i]["volumeInfo"]], 200);
+                break;
+            }
+        }
+
+        return response()->json(['message' => 'No book with all data'], 200);
+    } else {
+        log::info("get book data response not successful");
+        return response()->json([
+            'status' => $response->status(),
+            'message' => 'Failed to fetch book information.'
+        ], $response->status());
+    }
+    }
+
+    public function getBookDataByIdentifier($identifier)
+    {
+        $book = DB::table("books")->where('bookIdentifier', $identifier)->first();
+
+        return $book;
+    }
+
+    public function getBookData(Request $request)
+    {
+        $bookIdentifier = $request->book;
+
+        $bookData = self::getBookDataByIdentifier($bookIdentifier);
+
+        if ($bookData == null)
+        {
+            return response()->json([
+                        'message' => 'No book with given identifier found'
+                    ], 204);
+        }
+
+        else{
+            $book = ['identifier' => $bookData->bookIdentifier,
+                    'title' => $bookData->bookName,
+                    'jpg' => $bookData->bookCover,
+                    'url' => $bookData->bookUrl];
+            return response()->json([
+                        'book' => $book,
+                        'message' => 'Found book in DB'
+                    ], 200);
+        }
+    }
+
 }
