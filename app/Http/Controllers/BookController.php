@@ -263,7 +263,7 @@ class BookController extends Controller
                     log::info("item data: " . print_r($items[$i]["volumeInfo"], true));
                     if(isset($items[$i]["volumeInfo"]["title"]) && isset($items[$i]["volumeInfo"]["authors"]) && isset($items[$i]["volumeInfo"]["description"]) && isset($items[$i]["volumeInfo"]["categories"]) && isset($items[$i]["volumeInfo"]["language"]) && $items[$i]["volumeInfo"]["language"] == "en")
                     {
-                        self::insertGenre($bookIdentifier, $items[$i]["volumeInfo"]["description"], $items[$i]["volumeInfo"]["categories"]);
+                        self::insertGenre($bookIdentifier, $items[$i]["volumeInfo"]["description"], $items[$i]["volumeInfo"]["categories"], $items[$i]["volumeInfo"]["title"]);
 
                         return response()->json(['message' => 'Get book info successfully.', 'bookGenre'=>$items[$i]["volumeInfo"]["categories"], 'bookDescription'=>$items[$i]["volumeInfo"]["description"]], 200);
                         break;
@@ -316,16 +316,16 @@ class BookController extends Controller
         }
     }
 
-    public function insertGenre($identifier, $description, $category)
+    public function insertGenre($identifier, $description, $category, $title)
     {
-        log::info("entered insert genre");
+        log::info("entered insert genre: " . $identifier);
         $bookData = self::getBookDataByIdentifier($identifier);
         log::info("book data: " . print_r($bookData, true));
 
         if($bookData != null && (!isset($bookData->bookGenre) || !isset($bookData->bookDescription)))
         {
             log::info("entered if");
-            DB::table('books')->where('bookId', $bookData->bookId)->update(['bookGenre' => $category[0], 'bookDescription' => $description]);
+            DB::table('books')->where('bookId', $bookData->bookId)->update(['bookGenre' => $category[0], 'bookDescription' => $description, 'bookTitle' => $title]);
 
             $bookData = self::getBookDataByIdentifier($identifier);
             log::info("data after insert: " . print_r($bookData, true));
