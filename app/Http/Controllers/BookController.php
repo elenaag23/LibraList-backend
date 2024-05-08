@@ -398,7 +398,22 @@ class BookController extends Controller
         //     }
         // }
 
-        return response()->json(['genreBooks' => $bookResults], 200);
+        $outputData = [];
+
+        for($i = 0 ; $i < count($bookResults); $i++)
+        {
+            $object = [
+                'identifier' => $bookResults[$i]->bookIdentifier,
+                'jpg' => $bookResults[$i]->bookCover,
+                'url' => $bookResults[$i]->bookUrl,
+                'pagesNumber' => $bookResults[$i]->bookPages,
+                'title' => $bookResults[$i]->bookName,
+            ];
+
+            array_push($outputData, $object);
+        }
+
+        return response()->json(['genreBooks' => $outputData], 200);
     }
 
 }
