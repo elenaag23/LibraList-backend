@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Auth;
 
 
 
@@ -112,7 +113,6 @@ class BookController extends Controller
             $pdfUrl = $request->input('url');
             $response = Http::get($pdfUrl);
 
-            log::info("responseeee: " . print_r($response, true));
             return response($response->body())->header('Content-Type', 'application/pdf');
         } catch (\Exception $e) {
             //log::info("exception: " . print_r($e, true));
@@ -237,6 +237,168 @@ class BookController extends Controller
             // Deletion failed
             return response()->json(['message' => 'Failed to delete the user book record.'], 500);
         }
+    }
+
+    public function getBookInfo(Request $request)
+    {
+        $bookTitle = $request->bookTitle;
+        $bookIdentifier = $request->bookIdentifier;
+        $apiKey = 'AIzaSyCujE8VRyac9339XeuTFOyIuIovhTb_E-U';
+        $url = 'https://www.googleapis.com/books/v1/volumes';
+
+        $bookData = self::getBookDataByIdentifier($bookIdentifier);
+        if(!isset($bookData->bookGenre) || !isset($bookData->bookDescription) || $bookData->bookGenre == null || $bookData->bookDescription == null)
+        {
+            $response = Http::get($url, [
+                    'q' => $bookTitle,
+                    'key' => $apiKey,
+                ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $items = $data["items"];
+
+                for($i = 0; $i<count($items); $i++)
+                {
+                    log::info("item data: " . print_r($items[$i]["volumeInfo"], true));
+                    if(isset($items[$i]["volumeInfo"]["title"]) && isset($items[$i]["volumeInfo"]["authors"]) && isset($items[$i]["volumeInfo"]["description"]) && isset($items[$i]["volumeInfo"]["categories"]) && isset($items[$i]["volumeInfo"]["language"]) && $items[$i]["volumeInfo"]["language"] == "en")
+                    {
+                        self::insertGenre($bookIdentifier, $items[$i]["volumeInfo"]["description"], $items[$i]["volumeInfo"]["categories"], $items[$i]["volumeInfo"]["title"]);
+
+                        return response()->json(['message' => 'Get book info successfully.', 'bookGenre'=>$items[$i]["volumeInfo"]["categories"], 'bookDescription'=>$items[$i]["volumeInfo"]["description"]], 200);
+                        break;
+                    }
+                }
+
+                return response()->json(['message' => 'Get book info not successful'], 204);
+            }
+            else{
+                return response()->json(['message' => 'Api call not successful'], $response->status());
+            }
+    } else {
+        return response()->json([
+            'bookGenre' => $bookData->bookGenre,
+             'bookDescription' => $bookData->bookDescription,
+            'message' => 'Data found in DB'
+            ], 200);
+        }
+    }
+
+    public function getBookDataByIdentifier($identifier)
+    {
+        $book = DB::table("books")->where('bookIdentifier', $identifier)->first();
+
+        return $book;
+    }
+
+    public function getBookData(Request $request)
+    {
+        $bookIdentifier = $request->book;
+
+        $bookData = self::getBookDataByIdentifier($bookIdentifier);
+
+        if ($bookData == null)
+        {
+            return response()->json([
+                        'message' => 'No book with given identifier found'
+                    ], 204);
+        }
+
+        else{
+            $book = ['identifier' => $bookData->bookIdentifier,
+                    'title' => $bookData->bookName,
+                    'jpg' => $bookData->bookCover,
+                    'url' => $bookData->bookUrl];
+            return response()->json([
+                        'book' => $book,
+                        'message' => 'Found book in DB'
+                    ], 200);
+        }
+    }
+
+    public function insertGenre($identifier, $description, $category, $title)
+    {
+        log::info("entered insert genre: " . $identifier);
+        $bookData = self::getBookDataByIdentifier($identifier);
+        log::info("book data: " . print_r($bookData, true));
+
+        if($bookData != null && (!isset($bookData->bookGenre) || !isset($bookData->bookDescription)))
+        {
+            log::info("entered if");
+            DB::table('books')->where('bookId', $bookData->bookId)->update(['bookGenre' => $category[0], 'bookDescription' => $description, 'bookTitle' => $title]);
+
+            $bookData = self::getBookDataByIdentifier($identifier);
+            log::info("data after insert: " . print_r($bookData, true));
+        }
+    }
+
+    public function getBookRecommendations(Request $request)
+    {
+        log::info("entered book recommendations");
+        $user = Auth::user();
+
+        $userBooks = DB::table('userbooks')->where('userId', $user->id)->get()->toArray();
+        $apiKey = 'AIzaSyCujE8VRyac9339XeuTFOyIuIovhTb_E-U';
+        $url = 'https://www.googleapis.com/books/v1/volumes';
+
+        $genres = [];
+        $titles = [];
+        $bookIds = [];
+        $bookResults = [];
+
+        for($i = 0; $i<count($userBooks); $i++)
+        {
+            $book = DB::table('books')->where('bookId', $userBooks[$i]->bookId)->first();
+
+            if($book != null)
+            {
+                array_push($genres, $book->bookGenre);
+                array_push($bookIds, $book->bookId);
+            }
+        }
+
+        log::info("list of genres: " . print_r($genres, true));
+
+        for($i = 0 ; $i<count($genres); $i++)
+        {
+            log::info("entered genre for: " . $genres[$i]);
+            $booksByGenre = DB::table('books')->where('bookGenre', $genres[$i])->whereNotIn('bookId', $bookIds)->get()->toArray();
+
+            log::info("results: " . print_r($booksByGenre, true));
+
+            if(count($booksByGenre) > 0)
+            {
+                log::info("entered merge");
+                $bookResults = array_merge($bookResults, $booksByGenre);
+            }
+        }
+
+        // for($i = 0 ; $i<count($genres); $i++)
+        // {
+        //     log::info("entered for");
+        //     $response = Http::get($url, [
+        //         'q' => "subject:" . $genres[$i],
+        //         'key' => $apiKey,
+        //     ]);
+
+        //     if ($response->successful()) {
+        //         $data = $response->json();
+        //         $items = $data["items"]; 
+                
+
+        //         log::info("items to recommend: genre: " . $genres[$i] . " " . print_r($items, true));
+
+        //         for($j = 0 ; $j < count($items); $j++)
+        //         {
+        //             array_push($titles, $items[$j]["volumeInfo"]["title"]);
+        //         }
+        //     }
+        //     else{
+        //         log::info("response not successful: " . $genres[$i]);
+        //     }
+        // }
+
+        return response()->json(['genreBooks' => $bookResults], 200);
     }
 
 }
