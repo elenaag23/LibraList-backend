@@ -22,6 +22,8 @@ use App\Http\Controllers\PlaylistController;
 Route::middleware('auth:sanctum')->group(function (){
     Route::get('/authUser', [UserController::class, 'getCurrentUser']);
     Route::get('/userPlaylists', [PlaylistController::class, 'getUserPlaylist']);
+    Route::get('/getBookRecommendations', [BookController::class, 'getBookRecommendations']);
+    
 });
 
 Route::get('/getUsers', [UserController::class, 'getUsers']);

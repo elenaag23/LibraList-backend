@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Auth;
 
 
 
@@ -112,7 +113,6 @@ class BookController extends Controller
             $pdfUrl = $request->input('url');
             $response = Http::get($pdfUrl);
 
-            log::info("responseeee: " . print_r($response, true));
             return response($response->body())->header('Content-Type', 'application/pdf');
         } catch (\Exception $e) {
             //log::info("exception: " . print_r($e, true));
@@ -330,6 +330,75 @@ class BookController extends Controller
             $bookData = self::getBookDataByIdentifier($identifier);
             log::info("data after insert: " . print_r($bookData, true));
         }
+    }
+
+    public function getBookRecommendations(Request $request)
+    {
+        log::info("entered book recommendations");
+        $user = Auth::user();
+
+        $userBooks = DB::table('userbooks')->where('userId', $user->id)->get()->toArray();
+        $apiKey = 'AIzaSyCujE8VRyac9339XeuTFOyIuIovhTb_E-U';
+        $url = 'https://www.googleapis.com/books/v1/volumes';
+
+        $genres = [];
+        $titles = [];
+        $bookIds = [];
+        $bookResults = [];
+
+        for($i = 0; $i<count($userBooks); $i++)
+        {
+            $book = DB::table('books')->where('bookId', $userBooks[$i]->bookId)->first();
+
+            if($book != null)
+            {
+                array_push($genres, $book->bookGenre);
+                array_push($bookIds, $book->bookId);
+            }
+        }
+
+        log::info("list of genres: " . print_r($genres, true));
+
+        for($i = 0 ; $i<count($genres); $i++)
+        {
+            log::info("entered genre for: " . $genres[$i]);
+            $booksByGenre = DB::table('books')->where('bookGenre', $genres[$i])->whereNotIn('bookId', $bookIds)->get()->toArray();
+
+            log::info("results: " . print_r($booksByGenre, true));
+
+            if(count($booksByGenre) > 0)
+            {
+                log::info("entered merge");
+                $bookResults = array_merge($bookResults, $booksByGenre);
+            }
+        }
+
+        // for($i = 0 ; $i<count($genres); $i++)
+        // {
+        //     log::info("entered for");
+        //     $response = Http::get($url, [
+        //         'q' => "subject:" . $genres[$i],
+        //         'key' => $apiKey,
+        //     ]);
+
+        //     if ($response->successful()) {
+        //         $data = $response->json();
+        //         $items = $data["items"]; 
+                
+
+        //         log::info("items to recommend: genre: " . $genres[$i] . " " . print_r($items, true));
+
+        //         for($j = 0 ; $j < count($items); $j++)
+        //         {
+        //             array_push($titles, $items[$j]["volumeInfo"]["title"]);
+        //         }
+        //     }
+        //     else{
+        //         log::info("response not successful: " . $genres[$i]);
+        //     }
+        // }
+
+        return response()->json(['genreBooks' => $bookResults], 200);
     }
 
 }
