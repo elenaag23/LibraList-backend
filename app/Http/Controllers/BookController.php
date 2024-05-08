@@ -241,40 +241,47 @@ class BookController extends Controller
 
     public function getBookInfo(Request $request)
     {
-        $book = $request->book;
+        $bookTitle = $request->bookTitle;
+        $bookIdentifier = $request->bookIdentifier;
         $apiKey = 'AIzaSyCujE8VRyac9339XeuTFOyIuIovhTb_E-U';
-
         $url = 'https://www.googleapis.com/books/v1/volumes';
-        $response = Http::get($url, [
-        'q' => $book,
-        'key' => $apiKey,
-    ]);
 
-    if ($response->successful()) {
-        log::info("get book data response successful: " . print_r($response->json(), true));
-        $data = $response->json();
-        $items = $data["items"];
-
-        log::info("count items: " . count($items));
-
-        for($i = 0; $i<count($items); $i++)
+        $bookData = self::getBookDataByIdentifier($bookIdentifier);
+        if(!isset($bookData->bookGenre) || !isset($bookData->bookDescription) || $bookData->bookGenre == null || $bookData->bookDescription == null)
         {
-            log::info("item data: " . print_r($items[$i]["volumeInfo"], true));
-            if(isset($items[$i]["volumeInfo"]["title"]) && isset($items[$i]["volumeInfo"]["authors"]) && isset($items[$i]["volumeInfo"]["description"]) && isset($items[$i]["volumeInfo"]["categories"]) && isset($items[$i]["volumeInfo"]["language"]) && $items[$i]["volumeInfo"]["language"] == "en")
-            {
-                return response()->json(['message' => 'Get book info successfully.', 'bookInfo'=>$items[$i]["volumeInfo"]], 200);
-                break;
-            }
-        }
+            $response = Http::get($url, [
+                    'q' => $bookTitle,
+                    'key' => $apiKey,
+                ]);
 
-        return response()->json(['message' => 'No book with all data'], 200);
+            if ($response->successful()) {
+                $data = $response->json();
+                $items = $data["items"];
+
+                for($i = 0; $i<count($items); $i++)
+                {
+                    log::info("item data: " . print_r($items[$i]["volumeInfo"], true));
+                    if(isset($items[$i]["volumeInfo"]["title"]) && isset($items[$i]["volumeInfo"]["authors"]) && isset($items[$i]["volumeInfo"]["description"]) && isset($items[$i]["volumeInfo"]["categories"]) && isset($items[$i]["volumeInfo"]["language"]) && $items[$i]["volumeInfo"]["language"] == "en")
+                    {
+                        self::insertGenre($bookIdentifier, $items[$i]["volumeInfo"]["description"], $items[$i]["volumeInfo"]["categories"]);
+
+                        return response()->json(['message' => 'Get book info successfully.', 'bookGenre'=>$items[$i]["volumeInfo"]["categories"], 'bookDescription'=>$items[$i]["volumeInfo"]["description"]], 200);
+                        break;
+                    }
+                }
+
+                return response()->json(['message' => 'Get book info not successful'], 204);
+            }
+            else{
+                return response()->json(['message' => 'Api call not successful'], $response->status());
+            }
     } else {
-        log::info("get book data response not successful");
         return response()->json([
-            'status' => $response->status(),
-            'message' => 'Failed to fetch book information.'
-        ], $response->status());
-    }
+            'bookGenre' => $bookData->bookGenre,
+             'bookDescription' => $bookData->bookDescription,
+            'message' => 'Data found in DB'
+            ], 200);
+        }
     }
 
     public function getBookDataByIdentifier($identifier)
@@ -306,6 +313,22 @@ class BookController extends Controller
                         'book' => $book,
                         'message' => 'Found book in DB'
                     ], 200);
+        }
+    }
+
+    public function insertGenre($identifier, $description, $category)
+    {
+        log::info("entered insert genre");
+        $bookData = self::getBookDataByIdentifier($identifier);
+        log::info("book data: " . print_r($bookData, true));
+
+        if($bookData != null && (!isset($bookData->bookGenre) || !isset($bookData->bookDescription)))
+        {
+            log::info("entered if");
+            DB::table('books')->where('bookId', $bookData->bookId)->update(['bookGenre' => $category[0], 'bookDescription' => $description]);
+
+            $bookData = self::getBookDataByIdentifier($identifier);
+            log::info("data after insert: " . print_r($bookData, true));
         }
     }
 
