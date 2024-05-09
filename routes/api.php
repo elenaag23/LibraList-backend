@@ -7,6 +7,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\InsertController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\PlaylistController;
+use App\Http\Controllers\HighlightsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,6 +25,7 @@ Route::middleware('auth:sanctum')->group(function (){
     Route::get('/userPlaylists', [PlaylistController::class, 'getUserPlaylist']);
     Route::get('/getBookRecommendations', [BookController::class, 'getBookRecommendations']);
     Route::get('/userData', [UserController::class, 'userData']);
+    Route::get('/booksHighlights', [HighlightsController::class, 'booksHighlights']);
     
 });
 
