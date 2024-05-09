@@ -48,6 +48,6 @@ class PlaylistController extends Controller
             'playlists' => $playlists[0]->playlistId,
             'playlistData' => $playlistArray, 
             'map' => $map
-        ]);
+        ], 200);
     }
 }
