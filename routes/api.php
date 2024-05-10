@@ -26,7 +26,7 @@ Route::middleware('auth:sanctum')->group(function (){
     Route::get('/getBookRecommendations', [BookController::class, 'getBookRecommendations']);
     Route::get('/userData', [UserController::class, 'userData']);
     Route::get('/booksHighlights', [HighlightsController::class, 'booksHighlights']);
-    
+    Route::put('/toggleLike', [HighlightsController::class, 'toggleLike']);
 });
 
 Route::get('/getUsers', [UserController::class, 'getUsers']);

@@ -64,4 +64,25 @@ class HighlightsController extends Controller
 
         return response()->json(['map' => $results, 'books'=>$getBookData, 'colors'=>$colorMap, 'liked' => $getLikes], 200);
     }
+
+    public function toggleLike(Request $request)
+    {
+        $req = $request->all();
+
+        $highlightId =$req[0];
+
+        $user = Auth::user();
+
+        $getLike = DB::table('user_book_highlight')->where('userId', $user->id)->where('highlightId', $highlightId)->select('isLiked')->first();
+
+        $updateLike = DB::table('user_book_highlight')->where('userId', $user->id)->where('highlightId', $highlightId)->update(['isLiked' => !$getLike->isLiked]);
+
+        if($updateLike == 1)
+        return response()->json(['highlightId'=>$req, 'getLike' => $getLike->isLiked, 'update'=>$updateLike], 200);
+
+        else
+        {
+            return response()->json(['update'=>$updateLike], 500);
+        }
+    }
 }
