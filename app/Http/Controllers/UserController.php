@@ -43,4 +43,15 @@ class UserController extends Controller
 
         return response()->json(['user'=>$user]);
     }
+
+    public function editUser(Request $request)
+    {
+        $user = Auth::user();
+        $updatedUser = $request->all();
+
+        $updateUser = DB::table('users')->where('id', $user->id)->update(['name' => $updatedUser["name"], 'email' => $updatedUser["email"]]);
+
+        return response()->json("User updated succesfully", 200); 
+
+    }
 }
