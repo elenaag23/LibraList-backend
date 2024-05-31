@@ -85,4 +85,22 @@ class HighlightsController extends Controller
             return response()->json(['update'=>$updateLike], 500);
         }
     }
+
+    public function getLikes(Request $request)
+    {
+        $user = Auth::user();
+
+        $getHighlights = DB::table('user_book_highlight')->where('userId', $user->id)->where('isLiked', '1')->pluck('bookId', 'highlightId')->toArray();
+
+        $getBookIds = DB::table('user_book_highlight')->where('userId', $user->id)->where('isLiked', '1')->pluck('bookId')->toArray();
+
+        $getHighlightIds = DB::table('user_book_highlight')->where('userId', $user->id)->where('isLiked', '1')->pluck('highlightId')->toArray();
+
+        $books = DB::table('books')->whereIn('bookId', $getBookIds)->pluck('bookName', 'bookId')->toArray();
+
+        $highlights = DB::table('highlights')->whereIn('highlightId', $getHighlightIds)->pluck('highlightText', 'highlightId')->toArray();
+
+        return response()->json(['books'=>$books, 'map'=>$getHighlights, 'highlights'=>$highlights], 200);
+
+    }
 }

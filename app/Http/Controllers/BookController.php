@@ -458,4 +458,34 @@ class BookController extends Controller
         return response()->json(["titles" => $titles], 200);
     }
 
+    public function editRating(Request $request)
+    {
+        $user = Auth::user();
+        $input = $request->all();
+
+        $rating = $input[0];
+        $bookIdentifier = $input[1]["identifier"];
+
+        $getBook = DB::table('books')->where('bookIdentifier', $bookIdentifier)->select('bookId')->first();
+
+        log::info("get book: " . print_r($getBook, true));
+
+        $getBookData = DB::table('userbooks')->where('userId', $user->id)->where('bookId', $getBook->bookId)->update(['rating'=>$rating]);
+
+        log::info("input for edit rating: " . print_r($input, true));
+
+        return response()->json("Rating updated succesfully", 200);
+    }
+
+    public function getFavBooks(Request $request)
+    {
+        $user = Auth::user();
+
+        $getUserBooks = DB::table('userbooks')->where('userId', $user->id)->where('rating', 5)->pluck('bookId')->toArray();
+
+        $getBooks = Db::table('books')->whereIn('bookId', $getUserBooks)->pluck('bookName')->toArray();
+
+        return response()->json(["books"=>$getBooks], 200);
+    }
+
 }

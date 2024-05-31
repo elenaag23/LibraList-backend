@@ -23,12 +23,17 @@ use App\Http\Controllers\HighlightsController;
 Route::middleware('auth:sanctum')->group(function (){
     Route::get('/authUser', [UserController::class, 'getCurrentUser']);
     Route::put('/editUser', [UserController::class, 'editUser']);
+    Route::put('/editColorTags', [UserController::class, 'editColorTags']);
+    Route::get('/getColorTags', [UserController::class, 'getColorTags']);
     Route::get('/userPlaylists', [PlaylistController::class, 'getUserPlaylist']);
     Route::get('/getBookRecommendations', [BookController::class, 'getBookRecommendations']);
     Route::get('/userData', [UserController::class, 'userData']);
     Route::get('/booksHighlights', [HighlightsController::class, 'booksHighlights']);
     Route::put('/toggleLike', [HighlightsController::class, 'toggleLike']);
+    Route::get('/getLikes', [HighlightsController::class, 'getLikes']);
     Route::get('/getRecommendations', [BookController::class, 'getRecommendations']);
+    Route::put('/editRating', [BookController::class, 'editRating']);
+    Route::get('/getFavBooks', [BookController::class, 'getFavBooks']);
 });
 
 Route::get('/getUsers', [UserController::class, 'getUsers']);
