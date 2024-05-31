@@ -41,6 +41,10 @@ class PlaylistController extends Controller
 
             $map->put((int)$playlists[$i]->playlistId, $songArray);
         }
+
+        log::info("playlists data: " . print_r($playData, true));
+        log::info("playlists: " . print_r($playlists, true));
+        log::info("map: " . print_r($map, true));
         
         // Return data along with user details
         return response()->json([

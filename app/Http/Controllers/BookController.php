@@ -416,4 +416,76 @@ class BookController extends Controller
         return response()->json(['genreBooks' => $outputData], 200);
     }
 
+
+    public function getRecommendations(Request $request)
+    {
+        $user = Auth::user();
+
+        $userBooks = DB::table('userbooks')->where('userId', $user->id)->pluck('bookId');
+
+        $apiKey = 'AIzaSyCujE8VRyac9339XeuTFOyIuIovhTb_E-U';
+        $url = 'https://www.googleapis.com/books/v1/volumes';
+
+        $genres = DB::table('books')->whereIn('bookId', $userBooks)->distinct()->pluck('bookGenre');
+
+        $titles = [];
+
+        for($i = 0 ; $i<count($genres); $i++)
+        {
+            log::info("entered for");
+            $response = Http::get($url, [
+                'q' => "subject:" . $genres[$i],
+                'key' => $apiKey,
+            ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $items = $data["items"]; 
+                
+                log::info("items to recommend: genre: " . $genres[$i] . " " . print_r($items, true));
+
+                for($j = 0 ; $j < count($items); $j++)
+                {
+                    array_push($titles, $items[$j]["volumeInfo"]["title"]);
+                }
+            }
+            else{
+                log::info("response not successful: " . $genres[$i]);
+                return response()->json(['message'=>"failed at: " . $genres[$i]], 405);
+            }
+        }
+
+        return response()->json(["titles" => $titles], 200);
+    }
+
+    public function editRating(Request $request)
+    {
+        $user = Auth::user();
+        $input = $request->all();
+
+        $rating = $input[0];
+        $bookIdentifier = $input[1]["identifier"];
+
+        $getBook = DB::table('books')->where('bookIdentifier', $bookIdentifier)->select('bookId')->first();
+
+        log::info("get book: " . print_r($getBook, true));
+
+        $getBookData = DB::table('userbooks')->where('userId', $user->id)->where('bookId', $getBook->bookId)->update(['rating'=>$rating]);
+
+        log::info("input for edit rating: " . print_r($input, true));
+
+        return response()->json("Rating updated succesfully", 200);
+    }
+
+    public function getFavBooks(Request $request)
+    {
+        $user = Auth::user();
+
+        $getUserBooks = DB::table('userbooks')->where('userId', $user->id)->where('rating', 5)->pluck('bookId')->toArray();
+
+        $getBooks = Db::table('books')->whereIn('bookId', $getUserBooks)->pluck('bookName')->toArray();
+
+        return response()->json(["books"=>$getBooks], 200);
+    }
+
 }
