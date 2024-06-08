@@ -59,9 +59,11 @@ class UserController extends Controller
     {
         $user = Auth::user();
 
-        $color = DB::table('usertags')->where('userId', $user->id)->select('red', 'blue', 'green', 'orange')->first();
+        $color = json_decode($this->getColorTagsTrait($user->id));
 
-        return response()->json(['colors'=>$color], 200); 
+        if($color->response == "success") return response()->json(['colors'=>$color], 200); 
+        return response()->json(['colors'=>$color], 400); 
+
     }
 
     public function editColorTags(Request $request)
