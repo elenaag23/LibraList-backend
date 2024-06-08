@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 use DB;
+use Illuminate\Support\Facades\Log;
 
 
 trait UserTrait {
@@ -27,6 +28,28 @@ trait UserTrait {
         return json_encode([
             'response' => 'success',
             'users' => $users
+        ]);
+    }
+
+     public function editUserTrait($userId, $userData)
+    {
+        try{
+            if(isset($userData["password"]) && $userData["password"]!=null) $updateUser = DB::table('users')->where('id', $userId)->update(['password' => Hash::make($userData["password"])]);
+
+            $updateUser = DB::table('users')->where('id', $userId)->update(['name' => $userData["name"], 'email' => $userData["email"]]);
+
+            log::info("response: " . print_r($updateUser, true));
+
+        }catch(\Exception $e){
+            return json_encode([
+                'response' => 'failed',
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        return json_encode([
+            'response' => 'success',
+            'edit' => $updateUser
         ]);
     }
 }
