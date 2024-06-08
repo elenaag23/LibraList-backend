@@ -7,11 +7,13 @@ use DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
-
+use App\Traits\BookTrait;
 
 
 class BookController extends Controller
 {
+    use BookTrait;
+
     public function userBook(Request $request)
     {
         $userMail = $request->userMail;
@@ -486,6 +488,51 @@ class BookController extends Controller
         $getBooks = Db::table('books')->whereIn('bookId', $getUserBooks)->pluck('bookName')->toArray();
 
         return response()->json(["books"=>$getBooks], 200);
+    }
+
+    public function insertBook(Request $request)
+    {
+        log::info("book request: " . print_r($request->all(), true));
+
+        $receivedBooks = $request->all();
+
+        for($i=0 ; $i<count($receivedBooks); $i++)
+        {
+            if(!isset($receivedBooks[$i]['bookId']))
+            {
+                $identifier = $receivedBooks[$i]['identifier'];
+                log::info("here is the book identifier: " . $identifier);
+
+                //$bookInDB = DB::table('books')->where('bookIdentifier', $identifier)->get()->first();
+
+                $bookInDB = json_decode($this->getBookByIdentifierTrait($identifier))->book;
+
+                // log::info("result of db: " . print_r($bookInDB, true));
+                    log::info("result of db: " . gettype($bookInDB));
+
+                if($bookInDB == null)
+                {
+                    $res = self::insertBookFunction($receivedBooks[$i]);
+                    log::info("res to insert: " . print_r($res->getStatusCode(), true));
+
+                    if($res->getStatusCode() == 500)
+                    return response()->json(['message' => 'Error at book insertion'], 500);
+
+                }
+            }
+        }
+
+        return response()->json(['message' => 'Books added successfully'], 201)->header('Access-Control-Allow-Origin', '*'); 
+
+    }
+
+    public function insertBookFunction(Array $book)
+    {
+
+        $insertBook = json_decode($this->insertBookTrait($book));
+        if($insertBook->response == "success")  return response()->json(['message' => 'Book inserted successfully'], 201);
+
+        else return response()->json(['error' => 'Failed to insert book'], 500);
     }
 
 }

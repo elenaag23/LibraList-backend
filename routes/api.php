@@ -40,7 +40,7 @@ Route::middleware('auth:sanctum')->group(function (){
 Route::get('/getUsers', [UserController::class, 'getUsers']);
 Route::post('/login', [RegisterController::class, 'login']);
 Route::post('/register', [RegisterController::class, 'register']);
-Route::post('/insertBook', [InsertController::class, 'insertBook']);
+Route::post('/insertBook', [BookController::class, 'insertBook']);
 Route::post('/addToLibrary', [InsertController::class, 'addToLibrary']);
 Route::get('/userBook', [BookController::class, 'userBook']);
 Route::get('/bookList', [BookController::class, 'getBookList']);
