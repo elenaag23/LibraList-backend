@@ -9,6 +9,7 @@ use App\Http\Controllers\BookController;
 use App\Http\Controllers\PlaylistController;
 use App\Http\Controllers\HighlightsController;
 use App\Http\Controllers\UserTagController;
+use App\Http\Controllers\UserBookController;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,13 +36,13 @@ Route::middleware('auth:sanctum')->group(function (){
     Route::get('/getRecommendations', [BookController::class, 'getRecommendations']);
     Route::put('/editRating', [BookController::class, 'editRating']);
     Route::get('/getFavBooks', [BookController::class, 'getFavBooks']);
+    Route::post('/addToLibrary', [UserBookController::class, 'addToLibrary']);
 });
 
 Route::get('/getUsers', [UserController::class, 'getUsers']);
 Route::post('/login', [RegisterController::class, 'login']);
 Route::post('/register', [RegisterController::class, 'register']);
 Route::post('/insertBook', [BookController::class, 'insertBook']);
-Route::post('/addToLibrary', [InsertController::class, 'addToLibrary']);
 Route::get('/userBook', [BookController::class, 'userBook']);
 Route::get('/bookList', [BookController::class, 'getBookList']);
 Route::get('/getpdf', [BookController::class, 'getPdf']);

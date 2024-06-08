@@ -364,7 +364,7 @@ class BookController extends Controller
         for($i = 0 ; $i<count($genres); $i++)
         {
             log::info("entered genre for: " . $genres[$i]);
-            $booksByGenre = DB::table('books')->where('bookGenre', $genres[$i])->whereNotIn('bookId', $bookIds)->get()->toArray();
+            $booksByGenre = DB::table('books')->where('bookGenre', $genres[$i])->whereNotIn('bookId', $bookIds)->distinct()->get()->toArray();
 
             log::info("results: " . print_r($booksByGenre, true));
 
