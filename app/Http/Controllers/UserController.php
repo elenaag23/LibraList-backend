@@ -8,15 +8,22 @@ use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use App\Traits\UserTrait;
 
 
 class UserController extends Controller
 {
     //
+
+    use UserTrait;
+
     public function getUsers()
     {
-        $users = DB::table('users')->get();
-        return response()->json($users);
+        // $users = DB::table('users')->get();
+        // return response()->json($users);
+
+        $users = $this->getUsersTrait();
+        return $users;
     }
 
         public function fetchPdf($identifier)
