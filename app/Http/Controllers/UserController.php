@@ -54,27 +54,4 @@ class UserController extends Controller
         return response()->json(['message'=>"User updated succesfully", 'user'=>$edit], 200); 
 
     }
-
-    public function getColorTags(Request $request)
-    {
-        $user = Auth::user();
-
-        $color = json_decode($this->getColorTagsTrait($user->id));
-
-        if($color->response == "success") return response()->json(['colors'=>$color], 200); 
-        return response()->json(['colors'=>$color], 400); 
-
-    }
-
-    public function editColorTags(Request $request)
-    {
-        $user = Auth::user();
-        $updatedColors = $request->all();
-
-        $updateColors = DB::table('usertags')->where('userId', $user->id)->update(['red' => $updatedColors["red"], 'blue' => $updatedColors["blue"],
-        'green' => $updatedColors["green"], 'orange' => $updatedColors["orange"]]);
-
-        return response()->json("Colors updated succesfully", 200); 
-
-    }
 }

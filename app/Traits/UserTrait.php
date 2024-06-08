@@ -52,30 +52,4 @@ trait UserTrait {
             'edit' => $updateUser
         ]);
     }
-
-    public function getColorTagsTrait($userId)
-    {
-        try{
-            $color = DB::table('usertags')->where('userId', $userId)->select('red', 'blue', 'green', 'orange')->first();
-
-            log::info("retrieved colors: " . print_r($color, true));
-        }catch(\Exception $e){
-            return json_encode([
-                'response' => 'failed',
-                'error' => $e->getMessage()
-            ]);
-        }
-
-        if(empty($color)) {
-            return json_encode([
-                'response' => 'failure',
-                'error' => 'User has no color tags set'
-            ]);
-        }
-
-        return json_encode([
-            'response' => 'success',
-            'colors' => $color
-        ]);
-    }
 }
