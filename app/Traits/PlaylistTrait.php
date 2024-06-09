@@ -79,7 +79,7 @@ trait PlaylistTrait {
 
     }
 
-    public function getSong($songId)
+    public function getSongTrait($songId)
     {
         try{
             $songData = DB::table('songs')->where('songId', $songId)->first();
@@ -102,4 +102,93 @@ trait PlaylistTrait {
             'song' => $songData
         ]);
     }
+
+    public function insertPlaylistTrait($playlistName, $date)
+    {
+        try{
+             $playlistId = DB::table('playlists')->insertGetId([
+               'playlistName' => $playlistName,
+               'playlistDate' => $date,
+                ]); 
+            }catch(\Exception $e){
+            return json_encode([
+                'response' => 'failed',
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        return json_encode([
+            'response' => 'success',
+            'playlistId' => $playlistId
+        ]);
+    }
+
+    public function getSongByLinkTrait($songLink)
+    {
+        try{
+             $song = DB::table('songs')->where('songLink', $link)->first();
+            }catch(\Exception $e){
+            return json_encode([
+                'response' => 'failed',
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        if(empty($song)) {
+            return json_encode([
+                'response' => 'failure',
+                'error' => 'There is no song with this id'
+            ]);
+        }
+
+        return json_encode([
+            'response' => 'success',
+            'song' => $song
+        ]);
+    }
+
+    public function insertSongTrait($song)
+    {
+        try{
+            $songId = DB::table('songs')->insertGetId([
+                'songName' => $song["name"],
+                'songArtist' => $song["artist"],
+                'songUrl' => $song["url"],
+                'songLink' => $song["link"],
+                ]); 
+            }catch(\Exception $e){
+            return json_encode([
+                'response' => 'failed',
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        return json_encode([
+            'response' => 'success',
+            'song' => $songId
+        ]);
+    }
+
+    public function insertSongPlaylistTrait($userId, $bookId, $playlistId, $songId)
+    {
+        try{
+            $res = DB::table('songPlaylist')->insert([
+                        'userId' => $userId,
+                        'bookId' => $bookId,
+                        'playlistId' => $playlistId,
+                        'songId' => $songId,
+                        ]);
+            }catch(\Exception $e){
+            return json_encode([
+                'response' => 'failed',
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        return json_encode([
+            'response' => 'success',
+            'value' => $res
+        ]);
+    }
+
 }

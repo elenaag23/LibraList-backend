@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Collection;
 use App\Traits\PlaylistTrait;
+use App\Traits\BookTrait;
 
 use DB;
 
@@ -13,7 +14,7 @@ use Illuminate\Http\Request;
 class PlaylistController extends Controller
 
 {
-    use PlaylistTrait;
+    use PlaylistTrait, BookTrait;
 
     public function getUserPlaylist(Request $request)
     {
@@ -54,7 +55,7 @@ class PlaylistController extends Controller
             {
                 //$songData = DB::table('songs')->where('songId', $songsFromPlaylist[$j]->songId)->first();
 
-                $songDataRes = json_decode($this->getSong($songsFromPlaylist[$j]->songId));
+                $songDataRes = json_decode($this->getSongTrait($songsFromPlaylist[$j]->songId));
 
                 if($songDataRes->response == "success") $songData = $songDataRes->song;
                 else return response()->json(["message"=>"No song with this id"], 400); 
@@ -76,5 +77,63 @@ class PlaylistController extends Controller
             'playlistData' => $playlistArray, 
             'map' => $map
         ], 200);
+    }
+
+    public function savePlaylist(Request $request)
+    {
+        $user = Auth::user();
+        $bookIdentifier = $request->book;
+        $links = $request->links;
+        $date = $request->date;
+        $playlistName = $request->playlistName;
+
+        //$bookId = self::getBookId($bookIdentifier);
+
+        $bookRes = json_decode($this->getBookByIdentifierTrait($bookIdentifier));
+
+        if($bookRes->response == "success" && $bookRes->book != null) $bookId = $bookRes->book->bookId;
+        else return response()->json(["message"=>"No book with this id"], 404);  
+
+        // create playlist
+
+        $playlistRes = json_decode($this->insertPlaylistTrait($playlistName, $date));
+        
+        if($playlistRes->response == "success" && $playlistRes->playlistId != null ) $playlistId = $playlistRes->playlistId;
+        else return response()->json(["message"=>"Error inserting playlist"], 400); 
+
+        foreach($links as $song)
+        {
+
+            //verify if song exists
+
+            //$getSong = self::getSong($song["link"]);
+
+            $songRes = json_decode($this->getSongByLinkTrait($song["link"]));
+
+            if($songRes->response == "success" && $songRes->song != null) $songId = $songRes->song->songId; 
+            else
+            {
+                $songId = DB::table('songs')->insertGetId([
+                    'songName' => $song["name"],
+                    'songArtist' => $song["artist"],
+                    'songUrl' => $song["url"],
+                    'songLink' => $song["link"],
+                    ]); 
+
+                $songInsert = json_decode($this->insertSongTrait($song));
+
+                if($songInsert->response == "success" && $songInsert->song != null) $songId = $songInsert->song;
+                else return response()->json(["message"=>"Error inserting song"], 400); 
+            }
+                // return response()->json(['message' => 'Song inserted successfully'], 201);
+
+        
+            $insert = json_decode($this->insertSongPlaylistTrait($user->id, $bookId, $playlistId, $songId));
+
+            if($insert->response != "success") return response()->json(['error' => 'Failed to insert playlist to user'], 500);
+
+        } 
+
+        return response()->json(['message' => 'Playlist inserted successfully'], 201);
     }
 }

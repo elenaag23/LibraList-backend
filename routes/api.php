@@ -38,6 +38,8 @@ Route::middleware('auth:sanctum')->group(function (){
     Route::get('/getFavBooks', [BookController::class, 'getFavBooks']);
     Route::post('/addToLibrary', [UserBookController::class, 'addToLibrary']);
     Route::post('/addHighlight', [HighlightsController::class, 'addHighlight']);
+    Route::post('/savePlaylist', [PlaylistController::class, 'savePlaylist']);
+
 });
 
 Route::get('/getUsers', [UserController::class, 'getUsers']);
@@ -51,7 +53,6 @@ Route::get('/userHighlightsBook', [BookController::class, 'userHighlightsBook'])
 Route::post('/displayHighlights', [HighlightsController::class, 'displayHighlights']);
 Route::patch('/setPage', [BookController::class, 'setPage']);
 Route::delete('/deleteBook', [BookController::class, 'deleteBook']);
-Route::post('/savePlaylist', [InsertController::class, 'savePlaylist']);
 Route::get('/getBookInfo', [BookController::class, 'getBookInfo']);
 Route::get('/getBookData', [BookController::class, 'getBookData']);
 
