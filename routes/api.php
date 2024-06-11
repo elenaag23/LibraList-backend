@@ -8,6 +8,8 @@ use App\Http\Controllers\InsertController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\PlaylistController;
 use App\Http\Controllers\HighlightsController;
+use App\Http\Controllers\UserTagController;
+use App\Http\Controllers\UserBookController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,8 +25,8 @@ use App\Http\Controllers\HighlightsController;
 Route::middleware('auth:sanctum')->group(function (){
     Route::get('/authUser', [UserController::class, 'getCurrentUser']);
     Route::put('/editUser', [UserController::class, 'editUser']);
-    Route::put('/editColorTags', [UserController::class, 'editColorTags']);
-    Route::get('/getColorTags', [UserController::class, 'getColorTags']);
+    Route::put('/editColorTags', [UserTagController::class, 'editColorTags']);
+    Route::get('/getColorTags', [UserTagController::class, 'getColorTags']);
     Route::get('/userPlaylists', [PlaylistController::class, 'getUserPlaylist']);
     Route::get('/getBookRecommendations', [BookController::class, 'getBookRecommendations']);
     Route::get('/userData', [UserController::class, 'userData']);
@@ -34,22 +36,23 @@ Route::middleware('auth:sanctum')->group(function (){
     Route::get('/getRecommendations', [BookController::class, 'getRecommendations']);
     Route::put('/editRating', [BookController::class, 'editRating']);
     Route::get('/getFavBooks', [BookController::class, 'getFavBooks']);
+    Route::post('/addToLibrary', [UserBookController::class, 'addToLibrary']);
+    Route::post('/addHighlight', [HighlightsController::class, 'addHighlight']);
+    Route::post('/savePlaylist', [PlaylistController::class, 'savePlaylist']);
+
 });
 
 Route::get('/getUsers', [UserController::class, 'getUsers']);
 Route::post('/login', [RegisterController::class, 'login']);
 Route::post('/register', [RegisterController::class, 'register']);
-Route::post('/insertBook', [InsertController::class, 'insertBook']);
-Route::post('/addToLibrary', [InsertController::class, 'addToLibrary']);
+Route::post('/insertBook', [BookController::class, 'insertBook']);
 Route::get('/userBook', [BookController::class, 'userBook']);
 Route::get('/bookList', [BookController::class, 'getBookList']);
 Route::get('/getpdf', [BookController::class, 'getPdf']);
 Route::get('/userHighlightsBook', [BookController::class, 'userHighlightsBook']);
-Route::post('/addHighlight', [InsertController::class, 'addHighlight']);
 Route::post('/displayHighlights', [HighlightsController::class, 'displayHighlights']);
 Route::patch('/setPage', [BookController::class, 'setPage']);
 Route::delete('/deleteBook', [BookController::class, 'deleteBook']);
-Route::post('/savePlaylist', [InsertController::class, 'savePlaylist']);
 Route::get('/getBookInfo', [BookController::class, 'getBookInfo']);
 Route::get('/getBookData', [BookController::class, 'getBookData']);
 

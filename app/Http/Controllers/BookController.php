@@ -7,11 +7,13 @@ use DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
-
+use App\Traits\BookTrait;
 
 
 class BookController extends Controller
 {
+    use BookTrait;
+
     public function userBook(Request $request)
     {
         $userMail = $request->userMail;
@@ -357,12 +359,14 @@ class BookController extends Controller
             }
         }
 
+        $genres = collect($genres)->unique()->values()->all();
+
         log::info("list of genres: " . print_r($genres, true));
 
         for($i = 0 ; $i<count($genres); $i++)
         {
             log::info("entered genre for: " . $genres[$i]);
-            $booksByGenre = DB::table('books')->where('bookGenre', $genres[$i])->whereNotIn('bookId', $bookIds)->get()->toArray();
+            $booksByGenre = DB::table('books')->where('bookGenre', $genres[$i])->whereNotIn('bookId', $bookIds)->distinct()->get()->toArray();
 
             log::info("results: " . print_r($booksByGenre, true));
 
@@ -486,6 +490,52 @@ class BookController extends Controller
         $getBooks = Db::table('books')->whereIn('bookId', $getUserBooks)->pluck('bookName')->toArray();
 
         return response()->json(["books"=>$getBooks], 200);
+    }
+
+    public function insertBook(Request $request)
+    {
+        log::info("book request: " . print_r($request->all(), true));
+
+        $receivedBooks = $request->all();
+
+        for($i=0 ; $i<count($receivedBooks); $i++)
+        {
+            if(!isset($receivedBooks[$i]['bookId']))
+            {
+                $identifier = $receivedBooks[$i]['identifier'];
+                log::info("here is the book identifier: " . $identifier);
+
+                //$bookInDB = DB::table('books')->where('bookIdentifier', $identifier)->get()->first();
+
+                $bookInDB = json_decode($this->getBookByIdentifierTrait($identifier))->book;
+
+                // log::info("result of db: " . print_r($bookInDB, true));
+                    log::info("result of db: " . gettype($bookInDB));
+
+                if($bookInDB == null)
+                {
+                    $res = self::insertBookFunction($receivedBooks[$i]);
+                    log::info("res to insert: " . print_r($res->getStatusCode(), true));
+
+                    if($res->getStatusCode() == 500)
+                    return response()->json(['message' => 'Error at book insertion', 'error'=>json_decode($res)->message], 500);
+
+                }
+            }
+        }
+
+        return response()->json(['message' => 'Books added successfully'], 201)->header('Access-Control-Allow-Origin', '*'); 
+
+    }
+
+    public function insertBookFunction(Array $book)
+    {
+
+        $insertBook = json_decode($this->insertBookTrait($book)); 
+        log::info("insert bookd: " . print_r($insertBook, true));
+        if($insertBook->response == "success")  return response()->json(['message' => 'Book inserted successfully'], 201);
+
+        else return response()->json(['error' => 'Failed to insert book', 'message'=>$insertBook->error], 500);
     }
 
 }

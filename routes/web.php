@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\ExternalController;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,5 +22,5 @@ Route::get('/', function () {
 
 
 
-Route::get('/pdf/{identifier}', [UserController::class, 'fetchpdf']);
+Route::get('/pdf/{identifier}', [ExternalController::class, 'fetchpdf']);
 

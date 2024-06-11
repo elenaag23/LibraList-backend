@@ -26,17 +26,6 @@ class UserController extends Controller
         return $users;
     }
 
-        public function fetchPdf($identifier)
-    {
-        log::info("identifiers: " . print_r($identifier, true));
-        $apiUrl = 'https://archive.org/download/'.urlencode($identifier);
-        $client = new Client();
-        $response = $client->get($apiUrl);
-        
-        return response($response->getBody(), 200)
-            ->header('Content-Type', 'application/pdf');
-    }
-
     public function getCurrentUser(Request $request)
     {
         $user = $request->user();
@@ -54,37 +43,15 @@ class UserController extends Controller
 
     public function editUser(Request $request)
     {
+        log::info("enetered edit");
         $user = Auth::user();
         $updatedUser = $request->all();
 
-        log::info("updated user: " . print_r($updatedUser, true));
+        log::info("update user data: " . print_r($updatedUser, true));
 
-        if($updatedUser["password"]!=null) $updateUser = DB::table('users')->where('id', $user->id)->update(['password' => Hash::make($updatedUser["password"])]);
+        $edit = json_decode($this->editUserTrait($user->id, $updatedUser));
 
-        $updateUser = DB::table('users')->where('id', $user->id)->update(['name' => $updatedUser["name"], 'email' => $updatedUser["email"]]);
-
-        return response()->json("User updated succesfully", 200); 
-
-    }
-
-    public function getColorTags(Request $request)
-    {
-        $user = Auth::user();
-
-        $color = DB::table('usertags')->where('userId', $user->id)->select('red', 'blue', 'green', 'orange')->first();
-
-        return response()->json(['colors'=>$color], 200); 
-    }
-
-    public function editColorTags(Request $request)
-    {
-        $user = Auth::user();
-        $updatedColors = $request->all();
-
-        $updateColors = DB::table('usertags')->where('userId', $user->id)->update(['red' => $updatedColors["red"], 'blue' => $updatedColors["blue"],
-        'green' => $updatedColors["green"], 'orange' => $updatedColors["orange"]]);
-
-        return response()->json("Colors updated succesfully", 200); 
+        return response()->json(['message'=>"User updated succesfully", 'user'=>$edit], 200); 
 
     }
 }

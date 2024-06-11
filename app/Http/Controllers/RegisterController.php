@@ -23,13 +23,11 @@ class RegisterController extends Controller
         ]);
 
         if ($validator->fails()) {
-            // Get the first error message
             $errors = $validator->errors();
 
             log::info("errors: " . print_r($errors, true));
             $firstError = $errors->first();
 
-            // Get the errors for each field
             $nameErrors = $errors->get('name');
             $emailErrors = $errors->get('email');
             $passwordErrors = $errors->get('password');
@@ -46,7 +44,7 @@ class RegisterController extends Controller
         return response()->json(['message' => 'User registered successfully'], 201);
     }
 
-        public function login(Request $request)
+    public function login(Request $request)
     {
         if (Auth::attempt($request->only('email', 'password'))) {
             $user = Auth::user();

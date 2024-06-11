@@ -6,10 +6,16 @@ use Illuminate\Http\Request;
 use DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Collection;
+use App\Traits\BookTrait;
+use App\Traits\HighlightTrait;
+use App\Traits\UserHighlightTrait;
+use Illuminate\Support\Facades\Log;
 
 class HighlightsController extends Controller
 {
     //
+    use BookTrait, HighlightTrait, UserHighlightTrait;
+
     public function displayHighlights()
     {
         $userMail = $request->userMail;
@@ -102,5 +108,76 @@ class HighlightsController extends Controller
 
         return response()->json(['books'=>$books, 'map'=>$getHighlights, 'highlights'=>$highlights], 200);
 
+    }
+
+     public function addHighlight(Request $request)
+    {
+        log::info("parameters to add to highlights: " . print_r($request->all(), true));
+        $user = Auth::user();
+        $bookIdentifier = $request->book;
+        $highlight = $request->highlight;
+
+        //$bookId = self::getBookId($bookIdentifier);
+
+        $bookRes = json_decode($this->getBookByIdentifierTrait($bookIdentifier));
+
+        if($bookRes->book != null) $bookId = $bookRes->book->bookId;
+        else return response()->json(['error' => 'Book not found'], 404);
+
+        //$insertHigh = self::insertHighlight($highlight);
+        $element = json_decode($this->getHighlightTrait($highlight));
+
+        log::info("element: " . print_r($element, true));
+
+        if($element->highlight == null)
+        {
+            $res = json_decode($this->insertHighlightTrait($highlight));
+
+            log::info("res to highlight: " . print_r($res, true));
+        
+            if($res->response == "failed") return response()->json(['error' => 'Failed to insert highlight'], 500);
+        
+        }
+            // $user_highlight_book = DB::table('user_book_highlight')->insertGetId([
+            //     'userId' => $userId,
+            //     'bookId' => $bookId,
+            //     'highlightId' => $highlight['id'],
+            //     ]); 
+
+            $insertRes = json_decode($this->insertUserHighlightTrait($user->id, $highlight['id'], $bookId));
+
+            log::info("insert res: " . print_r($insertRes, true));
+            if($insertRes->response == "success") return response()->json(['message' => 'User added Book highlight successfully'], 201);
+
+            else return response()->json(['error' => 'Failed to insert highlight book to user'], 500);
+    }
+
+    public function insertHighlight($highlight)
+    {
+        log::info("highlight id: " . $highlight['id']);
+
+        // $element = DB::table('highlights')->where('highlightId', $highlight['id'])->where('highlightPage', $highlight['page'])->where('highlightTop', $highlight['top'])->where('highlightLeft', $highlight['left'])->where('highlightHeight', $highlight['height'])->where('highlightWidth', $highlight['width'])->where('highlightClassname', $highlight['classname'])->where('highlightText', $highlight['text'])->first();
+
+        $element = json_decode($this->getHighlightTrait($highlight));
+
+        if($element->response == "failed")
+        {
+            // DB::table('highlights')->insert([
+            //     'highlightId' => $highlight['id'],
+            //     'highlightPage' => $highlight['page'],
+            //     'highlightTop' => $highlight['top'],
+            //     'highlightLeft' => $highlight['left'],
+            //     'highlightHeight' => $highlight['height'],
+            //     'highlightWidth' => $highlight['width'],
+            //     'highlightClassname' => $highlight['classname'],
+            //     'highlightText' => $highlight['text'],
+            //     ]); 
+
+            $res = json_decode($this->insertHighlightTrait($highlight));
+        
+            if($res->response == "success") return response()->json(['message' => 'Highlight inserted successfully'], 201);
+            else return response()->json(['error' => 'Failed to insert highlight'], 500);
+        
+        }
     }
 }
