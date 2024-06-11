@@ -11,8 +11,6 @@ trait UserTagTrait {
     {
         try{
             $color = DB::table('usertags')->where('userId', $userId)->select('red', 'blue', 'green', 'orange')->first();
-
-            log::info("retrieved colors: " . print_r($color, true));
         }catch(\Exception $e){
             return json_encode([
                 'response' => 'failed',

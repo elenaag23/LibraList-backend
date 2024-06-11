@@ -9,19 +9,16 @@ use Illuminate\Support\Facades\Auth;
 
 class UserTagController extends Controller
 {
-    //
-
     use UserTagTrait;
-
 
     public function getColorTags(Request $request)
     {
         $user = Auth::user();
 
-        $color = json_decode($this->getColorTagsTrait($user->id));
+        $colors = json_decode($this->getColorTagsTrait($user->id));
 
-        if($color->response == "success") return response()->json(['colors'=>$color], 200); 
-        return response()->json(['colors'=>$color], 400); 
+        if($colors->response == "success") return response()->json(["colors"=>$colors], 200); 
+        return response()->json(["message" => "User has no color tags set"], 404); 
 
     }
 

@@ -359,6 +359,8 @@ class BookController extends Controller
             }
         }
 
+        $genres = collect($genres)->unique()->values()->all();
+
         log::info("list of genres: " . print_r($genres, true));
 
         for($i = 0 ; $i<count($genres); $i++)
@@ -516,7 +518,7 @@ class BookController extends Controller
                     log::info("res to insert: " . print_r($res->getStatusCode(), true));
 
                     if($res->getStatusCode() == 500)
-                    return response()->json(['message' => 'Error at book insertion'], 500);
+                    return response()->json(['message' => 'Error at book insertion', 'error'=>json_decode($res)->message], 500);
 
                 }
             }
@@ -529,10 +531,11 @@ class BookController extends Controller
     public function insertBookFunction(Array $book)
     {
 
-        $insertBook = json_decode($this->insertBookTrait($book));
+        $insertBook = json_decode($this->insertBookTrait($book)); 
+        log::info("insert bookd: " . print_r($insertBook, true));
         if($insertBook->response == "success")  return response()->json(['message' => 'Book inserted successfully'], 201);
 
-        else return response()->json(['error' => 'Failed to insert book'], 500);
+        else return response()->json(['error' => 'Failed to insert book', 'message'=>$insertBook->error], 500);
     }
 
 }
