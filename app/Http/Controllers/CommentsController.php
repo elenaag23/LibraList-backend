@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 class CommentsController extends Controller
 {
     use BookTrait, CommentTrait;
+
     public function addComment(Request $request)
     {
         $user = Auth::user();
@@ -34,6 +35,22 @@ class CommentsController extends Controller
 
         if($responseUserInsert->response == "success") return response()->json(['message' => 'Comment inserted successfully'], 200);
         else return response()->json(['message' => 'Error inserting comment to user'], 500);
+
+    }
+
+    public function getComments(Request $request){
+
+        $bookIdentifier = $request->book;
+
+        $bookResponse = json_decode($this->getBookByIdentifierTrait($bookIdentifier));
+
+        if($bookResponse->response == "success") $bookId = $bookResponse->book->bookId;
+        else return response()->json(['message' => 'Book not found'], 500);
+
+         $responseGet = json_decode($this->getCommentsTrait($bookId));
+
+         if($responseGet->response == "success") return response()->json(['comments' => $responseGet->comments, 'map' => $responseGet->map, 'users' => $responseGet->users], 200);
+        else return response()->json(['message' => 'Error retrieving comments'], 500);
 
     }
 }
