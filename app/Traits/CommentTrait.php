@@ -78,4 +78,30 @@ trait CommentTrait {
         ]);
     }
 
+    public function editCommentTrait($commentId, $commentText)
+    {
+        try{
+            $updateComment = DB::table('comments')->where('commentId', $commentId)->update(['commentText' => $commentText]);
+           // log::info("retrieved colors: " . print_r($color, true));
+        }catch(\Exception $e){
+            return json_encode([
+                'response' => 'failed',
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        if(empty($updateComment)) {
+            return json_encode([
+                'response' => 'failure',
+                'error' => 'User comment not modified'
+            ]);
+        }
+
+        return json_encode([
+            'response' => 'success',
+            'updateComment' => $updateComment
+        ]);
+    }
+
+
 }

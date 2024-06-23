@@ -53,4 +53,17 @@ class CommentsController extends Controller
         else return response()->json(['message' => 'Error retrieving comments'], 500);
 
     }
+
+    public function editComment(Request $request)
+    {
+        $bookIdentifier = $request->book;
+        $commentId = $request->comment;
+        $commentText = $request->commentText;
+
+        $editResponse = json_decode($this->editCommentTrait($commentId, $commentText));
+
+        if($editResponse->response == "success") response()->json(['message' => 'User comment updated successfully'], 200);
+        else return response()->json(['message' => 'Error updating comment'], 500);
+
+    }
 }
