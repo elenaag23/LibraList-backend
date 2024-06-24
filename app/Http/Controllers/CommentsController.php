@@ -33,7 +33,7 @@ class CommentsController extends Controller
 
         $responseUserInsert = json_decode($this->insertUserComment($commentId, $bookId, $user->id));
 
-        if($responseUserInsert->response == "success") return response()->json(['message' => 'Comment inserted successfully'], 200);
+        if($responseUserInsert->response == "success") return response()->json(['message' => 'Comment inserted successfully', 'idComment' => $responseUserInsert->idCommentUser], 200);
         else return response()->json(['message' => 'Error inserting comment to user'], 500);
 
     }
@@ -64,6 +64,19 @@ class CommentsController extends Controller
 
         if($editResponse->response == "success") response()->json(['message' => 'User comment updated successfully'], 200);
         else return response()->json(['message' => 'Error updating comment'], 500);
+
+    }
+
+        public function deleteComment(Request $request)
+    {
+        $bookIdentifier = $request->book;
+        $commentId = $request->comment;
+        $commentText = $request->commentText;
+
+        $deleteResponse = json_decode($this->deleteCommentTrait($commentId));
+
+        if($deleteResponse->response == "success") response()->json(['message' => 'User comment deleted successfully'], 200);
+        else return response()->json(['message' => 'Error deleting comment'], 500);
 
     }
 }

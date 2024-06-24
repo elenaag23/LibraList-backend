@@ -51,7 +51,7 @@ trait CommentTrait {
 
         return json_encode([
             'response' => 'success',
-            'idCommentUser' => $idCommentUser
+            'idCommentUser' => $commentId
         ]);
     }
 
@@ -100,6 +100,33 @@ trait CommentTrait {
         return json_encode([
             'response' => 'success',
             'updateComment' => $updateComment
+        ]);
+    }
+
+    public function deleteCommentTrait($commentId)
+    {
+        try{
+             $deleteUserComment = DB::table('usercomments')->where('commentId', $commentId)->delete();
+             $deleteComment = DB::table('comments')->where('commentId', $commentId)->delete();
+
+           // log::info("retrieved colors: " . print_r($color, true));
+        }catch(\Exception $e){
+            return json_encode([
+                'response' => 'failed',
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        if(empty($deleteComment)) {
+            return json_encode([
+                'response' => 'failure',
+                'error' => 'User comment not deleted'
+            ]);
+        }
+
+        return json_encode([
+            'response' => 'success',
+            'deleteComment' => $deleteComment
         ]);
     }
 

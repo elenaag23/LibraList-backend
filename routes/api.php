@@ -46,6 +46,7 @@ Route::middleware('auth:sanctum')->group(function (){
 
 Route::get('/getComments', [CommentsController::class, 'getComments']);
 Route::put('/editComment', [CommentsController::class, 'editComment']);
+Route::delete('/deleteComment', [CommentsController::class, 'deleteComment']);
 Route::get('/getUsers', [UserController::class, 'getUsers']);
 Route::post('/login', [RegisterController::class, 'login']);
 Route::post('/register', [RegisterController::class, 'register']);
