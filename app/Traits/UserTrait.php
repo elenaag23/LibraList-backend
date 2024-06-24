@@ -52,4 +52,28 @@ trait UserTrait {
             'edit' => $updateUser
         ]);
     }
+
+     public function getUserTrait($userId)
+    {
+        try{
+            $user = DB::table('users')->where('id', $userId)->select('name', 'email', 'bio')->get();
+        }catch(\Exception $e){
+            return json_encode([
+                'response' => 'failed',
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        if($user->isEmpty()) {
+            return json_encode([
+                'response' => 'failure',
+                'error' => 'There are no users with this id in the database'
+            ]);
+        }
+
+        return json_encode([
+            'response' => 'success',
+            'user' => $user
+        ]);
+    }
 }

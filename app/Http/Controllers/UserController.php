@@ -41,6 +41,16 @@ class UserController extends Controller
         return response()->json(['user'=>$user], 200);
     }
 
+    public function otherUserData(Request $request)
+    {
+        $userId = $request->userId;
+        
+        $userIdRes = json_decode($this->getUserTrait($userId));
+
+        if($userIdRes->response == "success") return response()->json(['user'=> $userIdRes->user], 200);
+        else return response()->json(['message'=> $userIdRes->error], 500);
+    }
+
     public function editUser(Request $request)
     {
         log::info("enetered edit");

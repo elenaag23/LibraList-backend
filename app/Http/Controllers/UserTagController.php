@@ -22,6 +22,17 @@ class UserTagController extends Controller
 
     }
 
+    public function getColorTagsUser(Request $request)
+    {
+        $userId = $request->userId;
+
+        $colors = json_decode($this->getColorTagsTrait($userId));
+
+        if($colors->response == "success") return response()->json(["colors"=>$colors], 200); 
+        return response()->json(["message" => "User has no color tags set"], 404); 
+
+    }
+
     public function editColorTags(Request $request)
     {
         $user = Auth::user();
