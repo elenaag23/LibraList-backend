@@ -10,6 +10,7 @@ use App\Http\Controllers\PlaylistController;
 use App\Http\Controllers\HighlightsController;
 use App\Http\Controllers\UserTagController;
 use App\Http\Controllers\UserBookController;
+use App\Http\Controllers\CommentsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -39,9 +40,13 @@ Route::middleware('auth:sanctum')->group(function (){
     Route::post('/addToLibrary', [UserBookController::class, 'addToLibrary']);
     Route::post('/addHighlight', [HighlightsController::class, 'addHighlight']);
     Route::post('/savePlaylist', [PlaylistController::class, 'savePlaylist']);
+    Route::post('/addComment', [CommentsController::class, 'addComment']);
 
 });
 
+Route::get('/getComments', [CommentsController::class, 'getComments']);
+Route::put('/editComment', [CommentsController::class, 'editComment']);
+Route::delete('/deleteComment', [CommentsController::class, 'deleteComment']);
 Route::get('/getUsers', [UserController::class, 'getUsers']);
 Route::post('/login', [RegisterController::class, 'login']);
 Route::post('/register', [RegisterController::class, 'register']);
