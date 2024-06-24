@@ -96,11 +96,54 @@ class HighlightsController extends Controller
     {
         $user = Auth::user();
 
-        $getHighlights = DB::table('user_book_highlight')->where('userId', $user->id)->where('isLiked', '1')->pluck('bookId', 'highlightId')->toArray();
+        // $getHighlights = DB::table('user_book_highlight')->where('userId', $user->id)->where('isLiked', '1')->pluck('bookId', 'highlightId')->toArray();
 
-        $getBookIds = DB::table('user_book_highlight')->where('userId', $user->id)->where('isLiked', '1')->pluck('bookId')->toArray();
+        $getHighlightsTrait = json_decode($this->getLikesOfUserTrait($user->id));
 
-        $getHighlightIds = DB::table('user_book_highlight')->where('userId', $user->id)->where('isLiked', '1')->pluck('highlightId')->toArray();
+        if($getHighlightsTrait->response === "success") $getHighlights = $getHighlightsTrait->highlights;
+        else return response()->json(['message' => $getHighlights->error], 500);
+
+        // $getBookIds = DB::table('user_book_highlight')->where('userId', $user->id)->where('isLiked', '1')->pluck('bookId')->toArray();
+
+        $booksUserTrait = json_decode($this->getBooksOfUser($user->id));
+
+        if($booksUserTrait->response === "success") $getBookIds = $booksUserTrait->books;
+        else return response()->json(['message' => $booksUserTrait->error], 500);
+
+
+        // $getHighlightIds = DB::table('user_book_highlight')->where('userId', $user->id)->where('isLiked', '1')->pluck('highlightId')->toArray();
+
+         $highlightsUserTrait = json_decode($this->getHighlightsOfUser($user->id));
+
+        if($highlightsUserTrait->response === "success") $getHighlightIds = $highlightsUserTrait->highlights;
+        else return response()->json(['message' => $highlightsUserTrait->error], 500);
+
+        $books = DB::table('books')->whereIn('bookId', $getBookIds)->pluck('bookName', 'bookId')->toArray();
+
+        $highlights = DB::table('highlights')->whereIn('highlightId', $getHighlightIds)->pluck('highlightText', 'highlightId')->toArray();
+
+        return response()->json(['books'=>$books, 'map'=>$getHighlights, 'highlights'=>$highlights], 200);
+
+    }
+
+    public function getLikesOfUser(Request $request)
+    {
+        $userId = $request->userId;
+
+        $getHighlightsTrait = json_decode($this->getLikesOfUserTrait($userId));
+
+        if($getHighlightsTrait->response === "success") $getHighlights = $getHighlightsTrait->highlights;
+        else return response()->json(['message' => $getHighlights->error], 500);
+
+        $booksUserTrait = json_decode($this->getBooksOfUser($userId));
+
+        if($booksUserTrait->response === "success") $getBookIds = $booksUserTrait->books;
+        else return response()->json(['message' => $booksUserTrait->error], 500);
+
+        $highlightsUserTrait = json_decode($this->getHighlightsOfUser($userId));
+
+        if($highlightsUserTrait->response === "success") $getHighlightIds = $highlightsUserTrait->highlights;
+        else return response()->json(['message' => $highlightsUserTrait->error], 500);
 
         $books = DB::table('books')->whereIn('bookId', $getBookIds)->pluck('bookName', 'bookId')->toArray();
 
