@@ -56,7 +56,7 @@ trait UserTrait {
      public function getUserTrait($userId)
     {
         try{
-            $user = DB::table('users')->where('id', $userId)->select('name', 'email', 'bio')->get();
+            $user = DB::table('users')->where('id', $userId)->select('id', 'name', 'email', 'bio', 'recomDate')->get();
         }catch(\Exception $e){
             return json_encode([
                 'response' => 'failed',

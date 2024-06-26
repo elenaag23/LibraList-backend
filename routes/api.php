@@ -44,6 +44,7 @@ Route::middleware('auth:sanctum')->group(function (){
 
 });
 
+Route::get('/getFavBooksUser', [BookController::class, 'getFavBooksUser']);
 Route::get('/getLikesUser', [HighlightsController::class, 'getLikesOfUser']);
 Route::get('/otherUserData', [UserController::class, 'otherUserData']);
 Route::get('/getColorTagsUser', [UserTagController::class, 'getColorTagsUser']);
