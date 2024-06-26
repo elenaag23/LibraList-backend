@@ -44,6 +44,10 @@ Route::middleware('auth:sanctum')->group(function (){
 
 });
 
+Route::get('/getFavBooksUser', [BookController::class, 'getFavBooksUser']);
+Route::get('/getLikesUser', [HighlightsController::class, 'getLikesOfUser']);
+Route::get('/otherUserData', [UserController::class, 'otherUserData']);
+Route::get('/getColorTagsUser', [UserTagController::class, 'getColorTagsUser']);
 Route::get('/getComments', [CommentsController::class, 'getComments']);
 Route::put('/editComment', [CommentsController::class, 'editComment']);
 Route::delete('/deleteComment', [CommentsController::class, 'deleteComment']);

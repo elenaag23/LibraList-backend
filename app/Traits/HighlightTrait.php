@@ -50,4 +50,60 @@ trait HighlightTrait {
         ]);
     }
 
+    public function getLikesOfUserTrait($userId)
+    {
+        try{
+            $getHighlights = DB::table('user_book_highlight')->where('userId', $userId)->where('isLiked', '1')->pluck('bookId', 'highlightId')->toArray();
+
+        }catch(\Exception $e){
+            return json_encode([
+                'response' => 'failed',
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        return json_encode([
+            'response' => 'success',
+            'highlights' => $getHighlights
+        ]);
+    }
+
+    public function getBooksOfUser($userId)
+    {
+         try{
+            $getBookIds = DB::table('user_book_highlight')->where('userId', $userId)->where('isLiked', '1')->pluck('bookId')->toArray();
+
+        }catch(\Exception $e){
+            return json_encode([
+                'response' => 'failed',
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        return json_encode([
+            'response' => 'success',
+            'books' => $getBookIds
+        ]);
+    }
+
+    public function getHighlightsOfUser($userId)
+    {
+         try{
+
+            $getHighlightIds = DB::table('user_book_highlight')->where('userId', $userId)->where('isLiked', '1')->pluck('highlightId')->toArray();
+
+        }catch(\Exception $e){
+            return json_encode([
+                'response' => 'failed',
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        return json_encode([
+            'response' => 'success',
+            'highlights' => $getHighlightIds
+        ]);
+    }
+
+
 }

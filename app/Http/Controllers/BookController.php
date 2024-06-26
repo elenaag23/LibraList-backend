@@ -492,6 +492,17 @@ class BookController extends Controller
         return response()->json(["books"=>$getBooks], 200);
     }
 
+    public function getFavBooksUser(Request $request)
+    {
+        $userId =$request->userId;
+
+        $getUserBooks = DB::table('userbooks')->where('userId', $userId)->where('rating', 5)->pluck('bookId')->toArray();
+
+        $getBooks = Db::table('books')->whereIn('bookId', $getUserBooks)->pluck('bookName')->toArray();
+
+        return response()->json(["books"=>$getBooks], 200);
+    }
+
     public function insertBook(Request $request)
     {
         log::info("book request: " . print_r($request->all(), true));
