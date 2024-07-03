@@ -64,4 +64,17 @@ class UserController extends Controller
         return response()->json(['message'=>"User updated succesfully", 'user'=>$edit], 200); 
 
     }
+
+    public function modifyDate(Request $request)
+    {
+        $user = Auth::user();
+        $date = $request->all();
+        log::info("here is date: " . print_r($date, true));
+        $edit = json_decode($this->modifyDateTrait($user->id, $date["date"]));
+
+        if($edit->response == "success") return response()->json(['message'=>"Recommandation date updated succesfully", 'user'=>$edit], 200); 
+
+        return response()->json(['message'=>"Recommandation date not updated", 'error'=>$edit->error], 500); 
+
+    }
 }

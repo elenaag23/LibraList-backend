@@ -31,13 +31,33 @@ trait UserTrait {
         ]);
     }
 
-     public function editUserTrait($userId, $userData)
+    public function editUserTrait($userId, $userData)
     {
         try{
             if(isset($userData["password"]) && $userData["password"]!=null) $updateUser = DB::table('users')->where('id', $userId)->update(['password' => Hash::make($userData["password"])]);
 
-            $updateUser = DB::table('users')->where('id', $userId)->update(['name' => $userData["name"], 'email' => $userData["email"]]);
+            $updateUser = DB::table('users')->where('id', $userId)->update(['name' => $userData["name"], 'email' => $userData["email"], 'bio' => $userData["bio"]]);
 
+            log::info("response: " . print_r($updateUser, true));
+
+        }catch(\Exception $e){
+            return json_encode([
+                'response' => 'failed',
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        return json_encode([
+            'response' => 'success',
+            'edit' => $updateUser
+        ]);
+    }
+
+    public function modifyDateTrait($userId, $date)
+    {
+        try{
+
+            $updateUser = DB::table('users')->where('id', $userId)->update(['recomdate' => $date]);
             log::info("response: " . print_r($updateUser, true));
 
         }catch(\Exception $e){

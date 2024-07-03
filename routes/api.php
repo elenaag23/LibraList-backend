@@ -34,16 +34,16 @@ Route::middleware('auth:sanctum')->group(function (){
     Route::get('/booksHighlights', [HighlightsController::class, 'booksHighlights']);
     Route::put('/toggleLike', [HighlightsController::class, 'toggleLike']);
     Route::get('/getLikes', [HighlightsController::class, 'getLikes']);
-    Route::get('/getRecommendations', [BookController::class, 'getRecommendations']);
     Route::put('/editRating', [BookController::class, 'editRating']);
     Route::get('/getFavBooks', [BookController::class, 'getFavBooks']);
     Route::post('/addToLibrary', [UserBookController::class, 'addToLibrary']);
     Route::post('/addHighlight', [HighlightsController::class, 'addHighlight']);
     Route::post('/savePlaylist', [PlaylistController::class, 'savePlaylist']);
     Route::post('/addComment', [CommentsController::class, 'addComment']);
-
+    Route::put('/modifyDate', [UserController::class, 'modifyDate']);
 });
 
+Route::get('/getRecommendations', [BookController::class, 'getRecommendations']);
 Route::get('/getFavBooksUser', [BookController::class, 'getFavBooksUser']);
 Route::get('/getLikesUser', [HighlightsController::class, 'getLikesOfUser']);
 Route::get('/otherUserData', [UserController::class, 'otherUserData']);

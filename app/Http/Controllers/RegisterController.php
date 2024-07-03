@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
+use DB;
 
 
 class RegisterController extends Controller
@@ -41,6 +43,9 @@ class RegisterController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
+        $updateDate = DB::table('users')->where('id', $user->id)->update(['recomDate' => Carbon::today()]);
+        $createTags = DB::table('userTags')->insertGetId(['userId' => $user->id]);
+
         return response()->json(['message' => 'User registered successfully'], 201);
     }
 
@@ -50,7 +55,7 @@ class RegisterController extends Controller
             $user = Auth::user();
             $token = $user->createToken('authToken')->plainTextToken;
 
-            return response()->json(['token' => $token]);
+            return response()->json(['token' => $token, 'user' => $user]);
         } else {
             return response()->json(['message' => 'Invalid credentials'], 401);
         }

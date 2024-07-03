@@ -36,7 +36,7 @@ class BookController extends Controller
             return response()->json(['message' => 'User does not have this book in library', 'has'=>false], 200);
         }
 
-        else return response()->json(['message' => 'User has book in library', 'has'=>true, 'pageNumber' => $getUserBook->pageNumber], 200); 
+        else return response()->json(['message' => 'User has book in library', 'has'=>true, 'pageNumber' => $getUserBook->pageNumber, 'rating' => $getUserBook->rating], 200); 
     }
 
     public function getBookList(Request $request)
@@ -195,7 +195,7 @@ class BookController extends Controller
         $userId = self::getUser($userMail);
         $bookId = self::getBookByIdentifier($book);
 
-        $updatePagesNumber = DB::table('books')->where('bookId', $bookId)->update(['bookPages' => $pagesNumber]);
+        if($pagesNumber != null) $updatePagesNumber = DB::table('books')->where('bookId', $bookId)->update(['bookPages' => $pagesNumber]);
 
         $getBook = DB::table('userbooks')->where('userId', $userId)->where('bookId', $bookId)->update(['pageNumber' => $pageNumber, 'accessDate' => $accessDate]);
 
@@ -423,9 +423,11 @@ class BookController extends Controller
 
     public function getRecommendations(Request $request)
     {
-        $user = Auth::user();
+        //$user = Auth::user();
 
-        $userBooks = DB::table('userbooks')->where('userId', $user->id)->pluck('bookId');
+        $userId = $request->userId;
+
+        $userBooks = DB::table('userbooks')->where('userId', $userId)->pluck('bookId');
 
         $apiKey = 'AIzaSyCujE8VRyac9339XeuTFOyIuIovhTb_E-U';
         $url = 'https://www.googleapis.com/books/v1/volumes';
@@ -439,6 +441,8 @@ class BookController extends Controller
             log::info("entered for");
             $response = Http::get($url, [
                 'q' => "subject:" . $genres[$i],
+                'orderBy' => 'relevance',
+                'maxResults' => 40,
                 'key' => $apiKey,
             ]);
 
@@ -450,7 +454,7 @@ class BookController extends Controller
 
                 for($j = 0 ; $j < count($items); $j++)
                 {
-                    array_push($titles, $items[$j]["volumeInfo"]["title"]);
+                    array_push($titles, $items[$j]["volumeInfo"]["title"] . " " . $items[$j]["volumeInfo"]["authors"][0]);
                 }
             }
             else{
@@ -458,8 +462,8 @@ class BookController extends Controller
                 return response()->json(['message'=>"failed at: " . $genres[$i]], 405);
             }
         }
-
-        return response()->json(["titles" => $titles], 200);
+        $finals = collect($titles)->unique()->values()->all();
+        return response()->json(["titles" => $finals], 200);
     }
 
     public function editRating(Request $request)
